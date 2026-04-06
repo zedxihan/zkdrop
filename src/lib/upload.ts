@@ -19,7 +19,14 @@ export async function uploadFile(file: File): Promise<string> {
     console.error('Failed to upload file: ', error.message);
     throw error;
   }
-  const shareableLink = `${window.location.origin}/file/${filePath}#${base64Key}.${base64Iv}`;
+  const encodedName = encodeURIComponent(file.name);
+  const encodedType = encodeURIComponent(file.type);
+  const shareableLink = `${window.location.origin}/file/${filePath}#${[
+    base64Key,
+    base64Iv,
+    encodedName,
+    encodedType,
+  ].join('.')}`;
 
   return shareableLink;
 }
