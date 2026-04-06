@@ -4,7 +4,7 @@ interface EncryptedFile {
   iv: Uint8Array;
 }
 
-// encrypt file
+/*---- Encrypt file ----*/
 export async function encryptFile(file: File): Promise<EncryptedFile> {
   const arrayBuffer = await file.arrayBuffer();
 
@@ -38,4 +38,37 @@ export function bufferToBase64(input: ArrayBuffer | Uint8Array): string {
 
   bytes.forEach((byte) => (binary += String.fromCharCode(byte)));
   return btoa(binary);
+}
+
+/*---- Decrypt file ----*/
+export function base64ToBuffer(base64: string): ArrayBuffer {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+export async function importKey(rawKey: ArrayBuffer): Promise<CryptoKey> {
+  return await crypto.subtle.importKey(
+    'raw',
+    rawKey,
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt'],
+  );
+}
+
+export async function decryptFile(
+  encryptedBuffer: ArrayBuffer,
+  key: CryptoKey,
+  iv: Uint8Array,
+): Promise<ArrayBuffer> {
+  return await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: iv as BufferSource },
+    key,
+    encryptedBuffer,
+  );
 }

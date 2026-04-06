@@ -1,7 +1,10 @@
 import { uploadFile } from './lib/upload';
 import { useMutation } from '@tanstack/react-query';
+import FilePage from './FilePage';
 
 export default function App() {
+  const path = window.location.pathname;
+
   const uploadMutation = useMutation<string, Error, File>({
     mutationFn: uploadFile,
     onSuccess: (url) => {
@@ -11,6 +14,10 @@ export default function App() {
       console.log('Upload Error:', error);
     },
   });
+
+  // for now
+  if (path.startsWith('/file/')) return <FilePage />;
+
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -24,12 +31,11 @@ export default function App() {
   };
 
   return (
-    <div>
-      <h1>zkDrop</h1>
+    <div style={{ padding: 40 }}>
+      <h1>ZKDrop</h1>
       <input type="file" onChange={handleChange} />
       {uploadMutation.isPending && <p>Uploading...</p>}
-      {uploadMutation.isSuccess && <p>Upload Success</p>}
-      {uploadMutation.isError && <p>Upload Error</p>}
+      {uploadMutation.error && <p>Error: {uploadMutation.error.message}</p>}
     </div>
   );
 }
