@@ -1,6 +1,7 @@
-import { base64ToBuffer, importKey, decryptFile } from './lib/encryption';
+import { base64ToBuffer, importKey, decryptFile } from '../lib/encryption';
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
 
 export default function FilePage() {
   const path = window.location.pathname;
@@ -35,15 +36,41 @@ export default function FilePage() {
     setCryptoKeyAndIV();
   }, [params.base64Key, params.base64IV]);
 
+  // check expiration
+  const {
+    data: fileMeta,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['file-meta', fileId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('files-table')
+        .select('expires_at')
+        .eq('file_path', fileId)
+        .single();
+
+      if (error || !data) throw new Error('File not found or link expired');
+      return data;
+    },
+    select: (data) => ({
+      ...data,
+      isExpired: new Date(data.expires_at) < new Date(),
+    }),
+  });
+
   const fileQuery = useQuery({
     queryKey: ['file', fileId],
-    enabled: !!cryptoKey && !!iv,
+    enabled: !!cryptoKey && !!iv && !!fileMeta && !fileMeta.isExpired,
 
     // fetch and decrypt
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/files/${fileId}`,
-      );
+      const { data, error } = await supabase.storage
+        .from('files')
+        .createSignedUrl(fileId, 60);
+      if (error || !data) throw new Error('Failed to get signed URL');
+
+      const res = await fetch(data.signedUrl);
       if (!res.ok) throw new Error('Failed to fetch file');
 
       const encryptedBuffer = await res.arrayBuffer();
@@ -71,6 +98,9 @@ export default function FilePage() {
       if (url) URL.revokeObjectURL(url);
     };
   }, [fileQuery.data]);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError || fileMeta?.isExpired) return <p>Link expired or invalid</p>;
 
   const fileName = params.encodedName
     ? decodeURIComponent(params.encodedName)
