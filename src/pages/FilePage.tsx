@@ -1,40 +1,15 @@
-import { base64ToBuffer, importKey, decryptFile } from '../lib/encryption';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { decryptFile } from '../lib/encryption';
+import { useDecryptionKeys } from '../hooks/useDecryptionkeys';
 
 export default function FilePage() {
   const path = window.location.pathname;
   const hash = window.location.hash;
 
   const fileId = path.replace('/file/', '');
-
-  // parse hash
-  const params = useMemo(() => {
-    const fragment = hash.substring(1);
-    const [base64Key, base64IV, encodedName, encodedType] = fragment.split('.');
-
-    return { base64Key, base64IV, encodedName, encodedType };
-  }, [hash]);
-
-  const [cryptoKey, setCryptoKey] = useState<CryptoKey | null>(null);
-  const [iv, setIV] = useState<Uint8Array | null>(null);
-
-  useEffect(() => {
-    if (!params.base64Key || !params.base64IV) return;
-
-    async function setCryptoKeyAndIV() {
-      const keyBuffer = base64ToBuffer(params.base64Key);
-      const ivBuffer = base64ToBuffer(params.base64IV);
-
-      const key = await importKey(keyBuffer);
-      const ivArray = new Uint8Array(ivBuffer);
-
-      setCryptoKey(key);
-      setIV(ivArray);
-    }
-    setCryptoKeyAndIV();
-  }, [params.base64Key, params.base64IV]);
+  const { params, cryptoKey, iv } = useDecryptionKeys(hash);
 
   // check expiration
   const {
@@ -59,11 +34,11 @@ export default function FilePage() {
     }),
   });
 
+  // fetch and decrypt
   const fileQuery = useQuery({
     queryKey: ['file', fileId],
     enabled: !!cryptoKey && !!iv && !!fileMeta && !fileMeta.isExpired,
 
-    // fetch and decrypt
     queryFn: async () => {
       const { data, error } = await supabase.storage
         .from('files')
