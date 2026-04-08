@@ -1,6 +1,6 @@
 import { uploadFile } from './lib/upload';
 import { useMutation } from '@tanstack/react-query';
-import FilePage from './FilePage';
+import FilePage from './pages/FilePage';
 
 export default function App() {
   const path = window.location.pathname;
