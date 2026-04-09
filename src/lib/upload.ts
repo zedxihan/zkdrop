@@ -1,12 +1,12 @@
-import { supabase } from "./supabase";
-import { bufferToBase64, encryptFile, exportKey } from "./encryption";
+import { supabase } from './supabase';
+import { bufferToBase64, encryptFile, exportKey } from './encryption';
 
 export type UploadStep =
-  | "idle"
-  | "encrypting"
-  | "uploading"
-  | "finalizing"
-  | "done";
+  | 'idle'
+  | 'encrypting'
+  | 'uploading'
+  | 'finalizing'
+  | 'done';
 
 interface UploadProps {
   file: File;
@@ -30,7 +30,7 @@ export async function uploadFile({
   onProgress,
   setProgress,
 }: UploadProps): Promise<string> {
-  onProgress("encrypting");
+  onProgress('encrypting');
   await step(setProgress, 10, 600);
   await step(setProgress, 25);
 
@@ -42,53 +42,51 @@ export async function uploadFile({
   const base64Iv = bufferToBase64(iv);
 
   const filePath = `${file.name}-${Date.now()}`;
-  const encryptedFile = new File([encryptedBuffer], file.name + ".enc");
+  const encryptedFile = new File([encryptedBuffer], file.name + '.enc');
 
-  onProgress("uploading");
+  onProgress('uploading');
   await step(setProgress, 45, 200);
   await step(setProgress, 70, 200);
 
   const { error } = await supabase.storage
-    .from("files")
+    .from('files')
     .upload(filePath, encryptedFile);
 
   if (error) {
-    console.error("Failed to upload file:", error.message);
+    console.error('Failed to upload file:', error.message);
     throw error;
   }
   await step(setProgress, 90);
 
-  onProgress("finalizing");
+  onProgress('finalizing');
   await step(setProgress, 95, 300);
 
   const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000);
 
   const [, dbResult] = await Promise.all([
     sleep(600),
-    supabase.from("files-table").insert({
+    supabase.from('files-table').insert({
       file_path: filePath,
       expires_at: expiresAt.toISOString(),
     }),
   ]);
 
   if (dbResult.error) {
-    console.error("Failed to insert metadata:", dbResult.error.message);
+    console.error('Failed to insert metadata:', dbResult.error.message);
     throw dbResult.error;
   }
 
   const encodedName = encodeURIComponent(file.name);
   const encodedType = encodeURIComponent(file.type);
 
-  const shareableLink = `${window.location.origin}/file/${filePath}#${
-    [
-      base64Key,
-      base64Iv,
-      encodedName,
-      encodedType,
-    ].join(".")
-  }`;
+  const shareableLink = `${window.location.origin}/file/${filePath}#${[
+    base64Key,
+    base64Iv,
+    encodedName,
+    encodedType,
+  ].join('.')}`;
 
   await step(setProgress, 100);
-  onProgress("done");
+  onProgress('done');
   return shareableLink;
 }

@@ -1,8 +1,8 @@
 export default function UploadIcon() {
   return (
     <svg
-      width="180"
-      height="135"
+      width="190"
+      height="145"
       viewBox="0 0 24 24"
       fill="var(--color-accent)"
       className="transition-opacity hover:opacity-90"

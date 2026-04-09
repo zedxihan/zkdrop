@@ -27,7 +27,7 @@ export default function UploadProgress({
 
   return (
     <div className="flex w-full max-w-[400px] flex-col items-center justify-center gap-10 py-8">
-      <h2 className="text-center text-[2.8rem]">Encryption Progress</h2>
+      <h2 className="text-center text-5xl">Encryption Progress</h2>
 
       <div className="w-full px-4">
         <Progress
