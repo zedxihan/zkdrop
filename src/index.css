@@ -1,20 +1,19 @@
 @import 'tailwindcss';
 @import '@fontsource/caveat/400.css';
-@import '@fontsource/caveat/500.css';
-@import '@fontsource/caveat/600.css';
 @import '@fontsource/caveat/700.css';
 
 @theme {
-  --color-bg: #1a202e;
-  --color-card: #161819;
+  --color-bg: #141517;
+  --color-card: #1c1e21;
   --color-accent: #7a9479;
   --color-accent-hover: #9eb6aa;
-  --color-text: #e2e8f0;
-  --color-muted: #64748b;
+  --color-text: #eaeaea;
+  --color-muted: #8a8f98;
   --color-border: rgba(255, 255, 255, 0.08);
 
   --font-roboto: 'Roboto', sans-serif;
   --font-caveat: 'Caveat', cursive;
+  --font-note: 'Courier New', 'Lucida Console', monospace;
 }
 
 @layer base {
