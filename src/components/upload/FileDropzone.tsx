@@ -58,8 +58,8 @@ export default function FileDropzone({
       onDragLeave={toggleDragging(false)}
       onDrop={handleDrop}
       className={clsx(
-        'bg-card text-text mx-auto flex h-[460px] w-full max-w-[940px] items-center justify-center rounded-xl border-[2.5px] border-dashed px-6 py-10 transition-all duration-200',
-        isDragging && 'shadow-[inset_0_0_0_2px_#9eb6aa]',
+        'bg-card text-text mx-auto flex h-[400px] w-full max-w-[940px] items-center justify-center rounded-xl border-[2.5px] border-dashed px-6 transition-all duration-200',
+        isDragging && 'shadow-[inset_0_0_0_2px_var(--color-accent-hover)]',
         showProgress && 'cursor-not-allowed opacity-80',
       )}
     >
