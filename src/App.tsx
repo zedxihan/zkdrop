@@ -1,41 +1,79 @@
-import { uploadFile } from './lib/upload';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { Routes, Route } from 'react-router-dom';
+import { uploadFile, type UploadStep } from './lib/upload';
 import FilePage from './pages/FilePage';
+import FileDropzone from './components/upload/FileDropzone';
 
 export default function App() {
-  const path = window.location.pathname;
+  const [progress, setProgress] = useState(0);
+  const [uploadStep, setUploadStep] = useState<UploadStep>('idle');
 
-  const uploadMutation = useMutation<string, Error, File>({
-    mutationFn: uploadFile,
-    onSuccess: (url) => {
-      console.log('Upload Success:', url);
-    },
-    onError: (error) => {
-      console.log('Upload Error:', error);
-    },
-  });
-
-  // for now
-  if (path.startsWith('/file/')) return <FilePage />;
-
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 50 * 1024 * 1024) {
-      alert('File size must be under 50MB');
-      return;
-    }
-
-    uploadMutation.mutate(file);
+  const resetUI = () => {
+    setUploadStep('idle');
+    setProgress(0);
   };
 
+  const { mutate, data, error, reset, variables } = useMutation<
+    string,
+    Error,
+    {
+      file: File;
+      onProgress: (step: UploadStep) => void;
+      setProgress: (value: number) => void;
+    }
+  >({
+    mutationFn: uploadFile,
+
+    onSuccess: () => {
+      setUploadStep('done');
+      setTimeout(() => {
+        reset();
+        resetUI();
+      }, 2500);
+    },
+
+    onError: () => resetUI(),
+  });
+
+  const handleFileSelect = (file: File) => {
+    if (file.size > 30 * 1024 * 1024)
+      return alert('File size must be under 30MB');
+
+    setProgress(0);
+    mutate({ file, onProgress: setUploadStep, setProgress });
+  };
+
+  const renderHome = () => (
+    <>
+      <FileDropzone
+        onFileSelect={handleFileSelect}
+        uploadStep={uploadStep}
+        selectedFile={variables?.file}
+        progress={progress}
+      />
+
+      {error && <p className="mt-4 text-red-500">Error: {error.message}</p>}
+
+      {data && (
+        <div className="mt-5">
+          <p>File uploaded!</p>
+          <a href={data} target="_blank" className="text-accent underline">
+            {data}
+          </a>
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <div style={{ padding: 40 }}>
-      <h1>ZKDrop</h1>
-      <input type="file" onChange={handleChange} />
-      {uploadMutation.isPending && <p>Uploading...</p>}
-      {uploadMutation.error && <p>Error: {uploadMutation.error.message}</p>}
+    <div className="p-10">
+      <h1 className="mb-8 text-4xl">ZKDrop</h1>
+
+      <Routes>
+        <Route path="/" element={renderHome()} />
+        <Route path="/file/:id" element={<FilePage />} />
+      </Routes>
     </div>
   );
 }

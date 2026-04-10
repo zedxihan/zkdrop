@@ -1,38 +1,84 @@
 import { supabase } from './supabase';
 import { bufferToBase64, encryptFile, exportKey } from './encryption';
 
-export async function uploadFile(file: File): Promise<string> {
+export type UploadStep =
+  | 'idle'
+  | 'encrypting'
+  | 'uploading'
+  | 'finalizing'
+  | 'done';
+
+interface UploadProps {
+  file: File;
+  onProgress: (step: UploadStep) => void;
+  setProgress: (value: number) => void;
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function step(
+  setProgress: (v: number) => void,
+  value: number,
+  delay = 0,
+) {
+  setProgress(value);
+  if (delay) await sleep(delay);
+}
+
+export async function uploadFile({
+  file,
+  onProgress,
+  setProgress,
+}: UploadProps): Promise<string> {
+  onProgress('encrypting');
+  await step(setProgress, 10, 600);
+  await step(setProgress, 25);
+
   const { encryptedBuffer, key, iv } = await encryptFile(file);
+  await step(setProgress, 35, 600);
+
   const rawKey = await exportKey(key);
   const base64Key = bufferToBase64(rawKey);
   const base64Iv = bufferToBase64(iv);
 
   const filePath = `${file.name}-${Date.now()}`;
-
   const encryptedFile = new File([encryptedBuffer], file.name + '.enc');
+
+  onProgress('uploading');
+  await step(setProgress, 45, 200);
+  await step(setProgress, 70, 200);
 
   const { error } = await supabase.storage
     .from('files')
     .upload(filePath, encryptedFile);
 
   if (error) {
-    console.error('Failed to upload file: ', error.message);
+    console.error('Failed to upload file:', error.message);
     throw error;
   }
+  await step(setProgress, 90);
 
-  // expiration
-  const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000); // 6 hr
-  const { error: dbError } = await supabase.from('files-table').insert({
-    file_path: filePath,
-    expires_at: expiresAt.toISOString(),
-  });
-  if (dbError) {
-    console.error('Failed to insert file metadata: ', dbError.message);
-    throw dbError;
+  onProgress('finalizing');
+  await step(setProgress, 95, 300);
+
+  const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000);
+
+  const [, dbResult] = await Promise.all([
+    sleep(600),
+    supabase.from('files-table').insert({
+      file_path: filePath,
+      expires_at: expiresAt.toISOString(),
+    }),
+  ]);
+
+  if (dbResult.error) {
+    console.error('Failed to insert metadata:', dbResult.error.message);
+    throw dbResult.error;
   }
 
   const encodedName = encodeURIComponent(file.name);
   const encodedType = encodeURIComponent(file.type);
+
   const shareableLink = `${window.location.origin}/file/${filePath}#${[
     base64Key,
     base64Iv,
@@ -40,5 +86,7 @@ export async function uploadFile(file: File): Promise<string> {
     encodedType,
   ].join('.')}`;
 
+  await step(setProgress, 100);
+  onProgress('done');
   return shareableLink;
 }
