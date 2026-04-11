@@ -1,5 +1,4 @@
 import { Card } from 'sketchbook-ui';
-import 'sketchbook-ui/style.css';
 import { Clock3, LockKeyhole, UserRoundX } from 'lucide-react';
 
 const cardColors = {

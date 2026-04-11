@@ -1,5 +1,4 @@
 import { Divider } from 'sketchbook-ui';
-import 'sketchbook-ui/style.css';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();

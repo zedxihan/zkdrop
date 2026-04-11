@@ -4,47 +4,38 @@ import { Routes, Route } from 'react-router-dom';
 import { uploadFile, type UploadStep } from './lib/upload';
 import FilePage from './pages/FilePage';
 import FileDropzone from './components/upload/FileDropzone';
-import InfoCards from './components/cards/InfoCards';
+import InfoCards from './components/ui/InfoCards';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
 export default function App() {
-  const [progress, setProgress] = useState(0);
-  const [uploadStep, setUploadStep] = useState<UploadStep>('idle');
+  const [ui, setUI] = useState<{ step: UploadStep; progress: number }>({
+    step: 'idle',
+    progress: 0,
+  });
 
-  const resetUI = () => {
-    setUploadStep('idle');
-    setProgress(0);
-  };
-
-  const { mutate, data, error, reset, variables } = useMutation<
-    string,
-    Error,
-    {
-      file: File;
-      onProgress: (step: UploadStep) => void;
-      setProgress: (value: number) => void;
-    }
-  >({
+  const { mutate, data, error, reset, variables } = useMutation({
     mutationFn: uploadFile,
-
-    onSuccess: () => {
-      setUploadStep('done');
-      setTimeout(() => {
-        reset();
-        resetUI();
-      }, 2500);
-    },
-
-    onError: () => resetUI(),
+    onError: () => setUI({ step: 'idle', progress: 0 }),
   });
 
   const handleFileSelect = (file: File) => {
-    if (file.size > 30 * 1024 * 1024)
-      return alert('File size must be under 30MB');
+    if (file.size > 30 * 1024 * 1024) {
+      alert('File size must be under 30MB');
+      return;
+    }
+    setUI((s) => ({ ...s, progress: 0 }));
 
-    setProgress(0);
-    mutate({ file, onProgress: setUploadStep, setProgress });
+    mutate({
+      file,
+      onProgress: (step) => setUI((s) => ({ ...s, step })),
+      setProgress: (progress) => setUI((s) => ({ ...s, progress })),
+    });
+  };
+
+  const handleReset = () => {
+    reset();
+    setUI({ step: 'idle', progress: 0 });
   };
 
   const renderHome = () => (
@@ -64,28 +55,16 @@ export default function App() {
 
       <FileDropzone
         onFileSelect={handleFileSelect}
-        uploadStep={uploadStep}
+        uploadStep={ui.step}
         selectedFile={variables?.file}
-        progress={progress}
+        progress={ui.progress}
+        shareableLink={data}
+        onReset={handleReset}
       />
       <InfoCards />
 
       {error && (
         <p className="font-note mt-4 text-red-500">Error: {error.message}</p>
-      )}
-
-      {data && (
-        <div className="border-accent bg-card mt-8 flex w-full max-w-[940px] flex-col items-center rounded-xl border-2 border-dashed p-6">
-          <p className="text-text mb-2 text-3xl">File uploaded successfully!</p>
-          <a
-            href={data}
-            target="_blank"
-            rel="noreferrer"
-            className="text-accent font-note hover:text-accent-hover text-lg break-all underline transition-colors"
-          >
-            {data}
-          </a>
-        </div>
       )}
     </div>
   );
