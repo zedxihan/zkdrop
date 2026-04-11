@@ -1,7 +1,6 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { FolderOpen } from 'lucide-react';
 import { Button, Divider } from 'sketchbook-ui';
-import 'sketchbook-ui/style.css';
 import clsx from 'clsx';
 import UploadIcon from './UploadIcon';
 import type { UploadStep } from '../../lib/upload';
