@@ -6,25 +6,25 @@ const actionBtn =
 
 export default function Header() {
   return (
-    <header className="mx-auto flex w-full max-w-[940px] items-center justify-between px-6 py-6 sm:px-0">
+    <header className="mx-auto flex w-full max-w-[940px] items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5 md:px-0">
       {/* Logo */}
-      <Link to="/" className="group flex items-center gap-2.5">
-        <div className="bg-accent text-bg flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-105">
-          <Box size={24} strokeWidth={2.2} />
+      <Link to="/" className="group flex min-w-0 items-center gap-2.5">
+        <div className="bg-accent text-bg flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 sm:h-11 sm:w-11">
+          <Box size={22} strokeWidth={2.2} className="sm:h-6 sm:w-6" />
         </div>
 
-        <div className="flex flex-col">
-          <h1 className="text-text text-4xl leading-none font-bold tracking-tight">
+        <div className="flex min-w-0 flex-col">
+          <h1 className="text-text text-3xl leading-none font-bold tracking-tight sm:text-4xl">
             ZK<span className="text-accent">Drop</span>
           </h1>
-          <span className="text-muted text-xs uppercase opacity-70">
+          <span className="text-muted truncate text-[10px] uppercase opacity-70 sm:text-xs">
             Zero-Knowledge Share
           </span>
         </div>
       </Link>
 
       {/* Actions */}
-      <div className="border-border bg-card flex items-center gap-1 rounded-xl border p-1">
+      <div className="border-border bg-card flex shrink-0 items-center gap-1 rounded-xl border p-1">
         <a
           href="https://github.com/zedxihan/zkdrop"
           target="_blank"

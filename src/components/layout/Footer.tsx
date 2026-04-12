@@ -5,11 +5,11 @@ export default function Footer() {
 
   return (
     <div className="mt-auto flex w-full flex-col items-center">
-      <div className="w-full max-w-[940px] px-6 sm:px-0">
+      <div className="mx-auto w-full max-w-[940px] px-4 sm:px-6 md:px-0">
         <Divider strokeWidth={1} variant="dashed" color="var(--color-accent)" />
       </div>
 
-      <footer className="text-muted mx-auto flex w-full max-w-[940px] flex-col items-center justify-between gap-4 px-6 pt-2 pb-6 text-sm sm:flex-row sm:px-0">
+      <footer className="text-muted mx-auto flex w-full max-w-[940px] flex-col items-center justify-between gap-4 px-4 pt-2 pb-6 text-sm sm:flex-row sm:px-6 md:px-0">
         <div className="flex flex-col items-center gap-2 sm:items-start">
           <p className="font-note tracking-tight">
             © {currentYear} ZKDrop — All rights reserved.
