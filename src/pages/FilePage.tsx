@@ -1,95 +1,57 @@
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { decryptFile } from '../lib/encryption';
-import { useDecryptionKeys } from '../hooks/useDecryptionkeys';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import Container from '../components/layout/Container';
+import FileDropzone from '../components/dropzone/FileDropzone';
+import { downloadFile } from '../lib/download';
+import { useDecryptionKeys } from '../hooks/useDecryptionKeys';
+import type { ProgressStep } from '../types';
 
 export default function FilePage() {
-  const path = window.location.pathname;
-  const hash = window.location.hash;
+  const { id = '' } = useParams();
+  const { params, cryptoKey, iv } = useDecryptionKeys(window.location.hash);
 
-  const fileId = path.replace('/file/', '');
-  const { params, cryptoKey, iv } = useDecryptionKeys(hash);
-
-  // check expiration
-  const {
-    data: fileMeta,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['file-meta', fileId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('files-table')
-        .select('expires_at')
-        .eq('file_path', fileId)
-        .single();
-
-      if (error || !data) throw new Error('File not found or link expired');
-      return data;
-    },
-    select: (data) => ({
-      ...data,
-      isExpired: new Date(data.expires_at) < new Date(),
-    }),
-  });
-
-  // fetch and decrypt
-  const fileQuery = useQuery({
-    queryKey: ['file', fileId],
-    enabled: !!cryptoKey && !!iv && !!fileMeta && !fileMeta.isExpired,
-
-    queryFn: async () => {
-      const { data, error } = await supabase.storage
-        .from('files')
-        .createSignedUrl(fileId, 60);
-      if (error || !data) throw new Error('Failed to get signed URL');
-
-      const res = await fetch(data.signedUrl);
-      if (!res.ok) throw new Error('Failed to fetch file');
-
-      const encryptedBuffer = await res.arrayBuffer();
-      const decryptedBuffer = await decryptFile(
-        encryptedBuffer,
-        cryptoKey!,
-        iv!,
-      );
-
-      const fileType = params.encodedType
-        ? decodeURIComponent(params.encodedType)
-        : 'application/octet-stream';
-
-      const blob = new Blob([decryptedBuffer], { type: fileType });
-      return URL.createObjectURL(blob);
-    },
-    staleTime: Infinity,
-    gcTime: Infinity,
-  });
-
-  // cleanup
-  useEffect(() => {
-    const url = fileQuery.data;
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [fileQuery.data]);
-
-  if (isLoading) return <p>Loading...</p>;
-  if (isError || fileMeta?.isExpired) return <p>Link expired or invalid</p>;
+  const [step, setStep] = useState<ProgressStep>('idle');
+  const [progress, setProgress] = useState(0);
 
   const fileName = params.encodedName
     ? decodeURIComponent(params.encodedName)
     : 'download';
 
+  const { mutate, error } = useMutation({
+    mutationFn: downloadFile,
+    onError: () => {
+      setStep('idle');
+      setProgress(0);
+    },
+  });
+
+  const handleDownload = () => {
+    mutate({
+      fileId: id,
+      fileName,
+      cryptoKey: cryptoKey!,
+      iv: iv!,
+      onProgress: setStep,
+      setProgress,
+    });
+  };
+
   return (
-    <div>
-      {fileQuery.data ? (
-        <a href={fileQuery.data} download={fileName}>
-          Download {fileName}
-        </a>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
+    <Container
+      title="Secure File"
+      accent="Retrieval"
+      subtitle="Decrypt locally and download securely."
+      error={error?.message}
+    >
+      <FileDropzone
+        mode="download"
+        step={step}
+        progress={progress}
+        selectedFile={{ name: fileName, size: 0 } as File}
+        downloadName={fileName}
+        onDownload={handleDownload}
+      />
+    </Container>
   );
 }

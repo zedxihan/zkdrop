@@ -1,8 +1,4 @@
-interface EncryptedFile {
-  encryptedBuffer: ArrayBuffer;
-  key: CryptoKey;
-  iv: Uint8Array;
-}
+import type { EncryptedFile } from '../types';
 
 /*---- Encrypt file ----*/
 export async function encryptFile(file: File): Promise<EncryptedFile> {

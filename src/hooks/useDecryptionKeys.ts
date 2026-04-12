@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { base64ToBuffer, importKey } from '../lib/encryption';
+import type { DecryptionKeyParams } from '../types';
 
 export function useDecryptionKeys(hash: string) {
   // parse hash
-  const params = useMemo(() => {
+  const params: DecryptionKeyParams = useMemo(() => {
     const fragment = hash.substring(1);
     const [base64Key, base64IV, encodedName, encodedType] = fragment.split('.');
 
