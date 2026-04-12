@@ -1,13 +1,11 @@
-import type { ReactNode } from 'react';
 import { Button } from 'sketchbook-ui';
+import type { ActionButtonProps } from '../../types';
 
-interface ButtonProps {
-  icon?: ReactNode;
-  label: string;
-  onClick?: () => void;
-}
-
-export default function ActionButton({ icon, label, onClick }: ButtonProps) {
+export default function ActionButton({
+  icon,
+  label,
+  onClick,
+}: ActionButtonProps) {
   return (
     <Button
       size="sm"
