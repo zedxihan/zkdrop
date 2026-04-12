@@ -1,18 +1,6 @@
 import { supabase } from './supabase';
 import { bufferToBase64, encryptFile, exportKey } from './encryption';
-
-export type UploadStep =
-  | 'idle'
-  | 'encrypting'
-  | 'uploading'
-  | 'finalizing'
-  | 'done';
-
-interface UploadProps {
-  file: File;
-  onProgress: (step: UploadStep) => void;
-  setProgress: (value: number) => void;
-}
+import type { UploadProps } from '../types';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
