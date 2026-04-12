@@ -37,11 +37,11 @@ export default function DropzoneStatus({
 
   if (step !== 'done')
     return (
-      <div className="flex w-full max-w-[400px] flex-col items-center gap-10 py-8">
-        <h2 className="text-5xl">
+      <div className="flex w-full max-w-[400px] flex-col items-center gap-8 py-6 sm:gap-10 sm:py-8">
+        <h2 className="text-4xl md:text-5xl">
           {mode === 'upload' ? 'Encryption' : 'Decryption'}
         </h2>
-        <div className="w-full px-4 text-center">
+        <div className="w-full px-1 text-center sm:px-4">
           <Progress
             variant="hatching"
             value={progress}
@@ -56,26 +56,26 @@ export default function DropzoneStatus({
           />
         </div>
         <div className="text-center">
-          <p className="text-3xl break-all">{file.name}</p>
+          <p className="text-2xl break-all sm:text-3xl">{file.name}</p>
           <p className="text-muted text-xl">{formatSize(file.size)}</p>
         </div>
       </div>
     );
 
   return (
-    <div className="flex w-full flex-col items-center gap-6 text-center">
-      <h2 className="text-4xl">
+    <div className="flex w-full max-w-full flex-col items-center gap-6 text-center">
+      <h2 className="text-3xl sm:text-4xl">
         {mode === 'upload' ? '✅ Upload Complete' : '🔓 File Ready'}
       </h2>
       {mode === 'upload' ? (
         <>
-          <p className="truncate text-xl">{file.name}</p>
+          <p className="max-w-full truncate text-lg sm:text-xl">{file.name}</p>
           {shareableLink && (
             <div className="flex w-full max-w-xl items-center gap-2 rounded-xl border p-2">
               <input
                 readOnly
                 value={shareableLink}
-                className="flex-1 truncate bg-transparent text-lg outline-none"
+                className="min-w-0 flex-1 truncate bg-transparent text-base outline-none sm:text-lg"
                 onClick={(e) => e.currentTarget.select()}
               />
               <button onClick={handleCopy}>
@@ -91,7 +91,7 @@ export default function DropzoneStatus({
         </>
       ) : (
         <>
-          <p className="truncate text-xl">{file.name}</p>
+          <p className="max-w-full truncate text-lg sm:text-xl">{file.name}</p>
           <ActionButton
             icon={<Download />}
             label="Download File"

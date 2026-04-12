@@ -25,7 +25,7 @@ export default function FileDropzone(props: DropzoneProps) {
           onFileSelect?.(e.dataTransfer.files[0]);
       }}
       className={clsx(
-        'bg-card text-text mx-auto flex h-[400px] w-full max-w-[940px] items-center justify-center rounded-xl border-[2.5px] border-dashed px-6 transition-all duration-200',
+        'bg-card text-text flex min-h-[320px] w-full items-center justify-center rounded-xl border-[2.5px] border-dashed px-4 py-8 transition-all duration-200 sm:min-h-[360px] sm:px-6 md:h-[400px] md:py-0',
         isDragging && 'shadow-[inset_0_0_0_2px_var(--color-accent-hover)]',
       )}
     >
