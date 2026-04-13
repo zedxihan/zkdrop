@@ -4,9 +4,7 @@ import type { DownloadProps } from '../types';
 
 export async function downloadFile({
   fileId,
-  fileName,
   cryptoKey,
-  iv,
   onProgress,
   setProgress,
 }: DownloadProps) {
@@ -20,19 +18,25 @@ export async function downloadFile({
   if (error) throw error;
 
   const res = await fetch(data.signedUrl);
-  const encrypted = await res.arrayBuffer();
+  if (!res.ok) throw new Error('Failed to fetch encrypted file');
+  const encryptedPayload = await res.arrayBuffer();
 
   onProgress('decrypting');
   setProgress(75);
 
-  const decrypted = await decryptFile(encrypted, cryptoKey, iv);
+  const { fileBytes, metadata } = await decryptFile(
+    encryptedPayload,
+    cryptoKey,
+  );
 
-  const blob = new Blob([decrypted]);
+  const blob = new Blob([fileBytes], {
+    type: metadata.type || 'application/octet-stream',
+  });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement('a');
   a.href = url;
-  a.download = fileName;
+  a.download = metadata.name;
   a.click();
 
   URL.revokeObjectURL(url);
