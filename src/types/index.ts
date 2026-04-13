@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 export type ProgressStep =
   | 'idle'
@@ -13,7 +13,7 @@ export interface ContainerProps {
   title: string;
   accent: string;
   subtitle: string;
-  children: React.ReactNode;
+  children: ReactNode;
   error?: string | null;
 }
 
@@ -55,7 +55,6 @@ export interface ActionButtonProps {
 export interface EncryptedFile {
   encryptedBuffer: ArrayBuffer;
   key: CryptoKey;
-  iv: Uint8Array;
 }
 
 export interface UploadProps {
@@ -66,16 +65,7 @@ export interface UploadProps {
 
 export interface DownloadProps {
   fileId: string;
-  fileName: string;
   cryptoKey: CryptoKey;
-  iv: Uint8Array;
   onProgress: (step: ProgressStep) => void;
   setProgress: (value: number) => void;
-}
-
-export interface DecryptionKeyParams {
-  base64Key: string;
-  base64IV: string;
-  encodedName: string;
-  encodedType: string;
 }
