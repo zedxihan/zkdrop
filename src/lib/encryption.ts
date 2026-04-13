@@ -1,4 +1,4 @@
-import type { EncryptedFile } from "../types";
+import type { EncryptedFile } from '../types';
 
 // converters
 export function bufferToBase64(input: ArrayBuffer | Uint8Array): string {
@@ -12,11 +12,11 @@ export function base64ToBuffer(base64: string): ArrayBuffer {
 
 // export-import
 export const exportKey = (key: CryptoKey): Promise<ArrayBuffer> =>
-  crypto.subtle.exportKey("raw", key);
+  crypto.subtle.exportKey('raw', key);
 
 export const importKey = (rawKey: ArrayBuffer): Promise<CryptoKey> =>
-  crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, [
-    "decrypt",
+  crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, [
+    'decrypt',
   ]);
 
 /*---- Encrypt file ----*/
@@ -32,15 +32,15 @@ export async function encryptFile(file: File): Promise<EncryptedFile> {
   const merged = new Uint8Array(await combinedBlob.arrayBuffer());
 
   const key = await crypto.subtle.generateKey(
-    { name: "AES-GCM", length: 256 },
+    { name: 'AES-GCM', length: 256 },
     true,
-    ["encrypt", "decrypt"],
+    ['encrypt', 'decrypt'],
   );
 
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
   const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+    { name: 'AES-GCM', iv },
     key,
     merged,
   );
@@ -69,7 +69,7 @@ export async function decryptFile(
   const encrypted = bytes.slice(12);
 
   const decrypted = new Uint8Array(
-    await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted),
+    await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted),
   );
 
   const metaLength = new Uint32Array(decrypted.slice(0, 4).buffer)[0];
