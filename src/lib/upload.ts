@@ -28,7 +28,7 @@ export async function uploadFile({
   const rawKey = await exportKey(key);
   const base64Key = bufferToBase64(rawKey);
 
-  const filePath = `${crypto.randomUUID()}.enc`;
+  const filePath = `${crypto.randomUUID().slice(0, 12)}.enc`;
   const encryptedFile = new Blob([encryptedBuffer], {
     type: 'application/octet-stream',
   });
