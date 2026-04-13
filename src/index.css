@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import '@fontsource/caveat/400.css';
-@import '@fontsource/caveat/700.css';
+@import '@fontsource/caveat/latin-400.css';
+@import '@fontsource/caveat/latin-700.css';
 
 @theme {
   --color-bg: #141517;
