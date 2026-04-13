@@ -1,5 +1,4 @@
 import { FolderOpen, Download } from 'lucide-react';
-import { Divider } from 'sketchbook-ui';
 import ActionButton from '../ui/ActionButton';
 import type { IdleViewProps } from '../../types';
 import UploadIcon from './UploadIcon';
@@ -13,7 +12,7 @@ export default function DropzoneIdle({
   return (
     <div className="flex w-full flex-col items-center gap-5 px-2 text-center sm:px-0">
       {mode === 'upload' ? (
-        <div className="flex w-full flex-col items-center gap-5">
+        <div className="flex w-full flex-col items-center gap-5 md:pb-[60px]">
           <UploadIcon />
           <div className="text-text text-center">
             <h2 className="text-3xl leading-none md:text-4xl">
@@ -26,9 +25,6 @@ export default function DropzoneIdle({
             label="Select File"
             onClick={onSelect}
           />
-          <div className="hidden w-full max-w-[400px] md:block">
-            <Divider variant="dashed" />
-          </div>
         </div>
       ) : (
         <>
