@@ -22,15 +22,16 @@ export async function uploadFile({
   await step(setProgress, 10, 600);
   await step(setProgress, 25);
 
-  const { encryptedBuffer, key, iv } = await encryptFile(file);
+  const { encryptedBuffer, key } = await encryptFile(file);
   await step(setProgress, 35, 600);
 
   const rawKey = await exportKey(key);
   const base64Key = bufferToBase64(rawKey);
-  const base64Iv = bufferToBase64(iv);
 
-  const filePath = `${file.name}-${Date.now()}`;
-  const encryptedFile = new File([encryptedBuffer], file.name + '.enc');
+  const filePath = `${crypto.randomUUID()}.enc`;
+  const encryptedFile = new Blob([encryptedBuffer], {
+    type: 'application/octet-stream',
+  });
 
   onProgress('uploading');
   await step(setProgress, 45, 200);
@@ -60,19 +61,14 @@ export async function uploadFile({
   ]);
 
   if (dbResult.error) {
+    await supabase.storage.from('files').remove([filePath]);
     console.error('Failed to insert metadata:', dbResult.error.message);
     throw dbResult.error;
   }
 
-  const encodedName = encodeURIComponent(file.name);
-  const encodedType = encodeURIComponent(file.type);
-
-  const shareableLink = `${window.location.origin}/file/${filePath}#${[
-    base64Key,
-    base64Iv,
-    encodedName,
-    encodedType,
-  ].join('.')}`;
+  const shareableLink = `${window.location.origin}/file/${encodeURIComponent(
+    filePath,
+  )}#${base64Key}`;
 
   await step(setProgress, 100);
   onProgress('done');

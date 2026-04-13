@@ -9,14 +9,10 @@ import type { ProgressStep } from '../types';
 
 export default function FilePage() {
   const { id = '' } = useParams();
-  const { params, cryptoKey, iv } = useDecryptionKeys(window.location.hash);
+  const { cryptoKey } = useDecryptionKeys(window.location.hash);
 
   const [step, setStep] = useState<ProgressStep>('idle');
   const [progress, setProgress] = useState(0);
-
-  const fileName = params.encodedName
-    ? decodeURIComponent(params.encodedName)
-    : 'download';
 
   const { mutate, error } = useMutation({
     mutationFn: downloadFile,
@@ -27,11 +23,10 @@ export default function FilePage() {
   });
 
   const handleDownload = () => {
+    if (!cryptoKey) return;
     mutate({
       fileId: id,
-      fileName,
-      cryptoKey: cryptoKey!,
-      iv: iv!,
+      cryptoKey,
       onProgress: setStep,
       setProgress,
     });
@@ -42,14 +37,19 @@ export default function FilePage() {
       title="Secure File"
       accent="Retrieval"
       subtitle="Decrypt locally and download securely."
-      error={error?.message}
+      error={
+        error?.message ||
+        (!cryptoKey && step === 'idle'
+          ? 'Missing decryption key in URL.'
+          : undefined)
+      }
     >
       <FileDropzone
         mode="download"
         step={step}
         progress={progress}
-        selectedFile={{ name: fileName, size: 0 } as File}
-        downloadName={fileName}
+        selectedFile={{ name: 'Encrypted File', size: 0 } as unknown as File}
+        downloadName="Encrypted File"
         onDownload={handleDownload}
       />
     </Container>
