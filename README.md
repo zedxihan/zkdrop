@@ -35,16 +35,17 @@
 
 **Live:** https://zkdrop.pages.dev
 
-<img width="1730" height="936" alt="gg" src="https://github.com/user-attachments/assets/669938bf-430a-4fef-87e9-e91bbfb1de23" />
+<img width="1618" height="942" alt="xd" src="https://github.com/user-attachments/assets/9548e269-9693-4141-bf84-b0f6907660c1" />
 
 ## Features
 
-- **End-to-End Encryption:** Local AES-256-GCM encryption layers applied in the browser runtime.
-- **Zero-Knowledge Architecture:** No login, no tracking, and no server-side access to your decryption keys.
-- **Auto-Purge System:** Integrated Supabase Edge Functions automatically delete files after 6 hours.
-- **Size Restricted:** Optimized for quick sharing with a 30MB file size limit.
-- **Sketchy Aesthetic:** A unique UI built with `sketchbook-ui` featuring handwritten fonts and decorative elements.
-- **Responsive Design:** Mobile-first approach using Tailwind CSS for seamless sharing on any device.
+- **True Zero-Knowledge:** Local AES-256-GCM encryption hides data and metadata before it ever leaves the browser.
+- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, paired with a dedicated UI for seamless downloads.
+- **Frictionless Experience:** Absolutely no accounts, logins, or tracking required—just drop a file and get a link.
+- **Self-Destructing:** Files remain strictly temporary and are automatically purged after 6 hours.
+- **Interactive Aesthetic:** A sleek, playful UI featuring `sketchbook-ui`, animated dot-grids, and GSAP interactions.
+- **Modern Performance:** Built on Vite, React 19, and Bun to deliver a lightning-fast frontend.
+- **Fast & Responsive:** A mobile-first design optimized for quick drops with a 30MB file size limit.
 
 ## Quick Start
 
@@ -54,6 +55,9 @@ Clone the project and run it locally with Bun.
 # Clone the repository
 git clone https://github.com/zedxihan/zkdrop.git
 cd zkdrop
+
+# Create & switch to your branch
+git switch -c feature/awsome-feature
 
 # Install dependencies
 bun install
