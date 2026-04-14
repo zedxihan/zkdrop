@@ -18,8 +18,17 @@ export default defineConfig({
           if (id.includes('@supabase/supabase-js')) {
             return 'supabase';
           }
-          if (id.includes('@tanstack/react-query')) {
-            return 'query';
+          if (
+            id.includes('@tanstack/react-query') ||
+            id.includes('lucide-react')
+          ) {
+            return 'vendor-utils';
+          }
+          if (id.includes('sketchbook-ui')) {
+            return 'sketchbook-ui';
+          }
+          if (id.includes('gsap')) {
+            return 'gsap';
           }
         },
       },

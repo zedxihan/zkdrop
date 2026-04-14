@@ -1,57 +1,67 @@
-import { useRef, useState } from 'react';
-import clsx from 'clsx';
+import { useRef } from 'react';
 import type { DropzoneProps } from '../../types';
 import DropzoneIdle from './DropzoneIdle';
 import DropzoneStatus from './DropzoneStatus';
+import DotGrid from './DotGrid';
 
 export default function FileDropzone(props: DropzoneProps) {
   const { mode = 'upload', step, onFileSelect } = props;
-  const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const onProgress = step !== 'idle';
 
   return (
     <div
-      onDragOver={(e) => {
-        e.preventDefault();
-        if (mode === 'upload' && step === 'idle') setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
+      onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
-        setIsDragging(false);
         if (mode === 'upload' && step === 'idle')
           onFileSelect?.(e.dataTransfer.files[0]);
       }}
-      className={clsx(
-        'bg-card text-text flex min-h-[320px] w-full items-center justify-center rounded-xl border-[2.5px] border-dashed px-4 py-8 transition-all duration-200 sm:min-h-[360px] sm:px-6 md:h-[400px] md:py-0',
-        isDragging && 'shadow-[inset_0_0_0_2px_var(--color-accent-hover)]',
-      )}
+      className="bg-card text-text relative min-h-[320px] w-full overflow-hidden rounded-xl border-[2.5px] border-dashed border-white/70 transition-all duration-200 sm:min-h-[360px] md:h-[400px]"
     >
-      {onProgress ? (
-        <DropzoneStatus
-          {...props}
-          mode={mode}
-          file={
-            props.selectedFile ||
-            ({ name: props.downloadName || 'file', size: 0 } as File)
-          }
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+      >
+        <DotGrid
+          dotSize={5}
+          gap={15}
+          baseColor="#241f31"
+          activeColor="#9eb6aa"
+          proximity={120}
+          shockRadius={250}
+          shockStrength={5}
+          resistance={750}
+          returnDuration={1.5}
         />
-      ) : (
-        <DropzoneIdle
-          mode={mode}
-          fileName={props.downloadName}
-          onSelect={() => inputRef.current?.click()}
-          onDownload={props.onDownload}
+      </div>
+
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 sm:px-6">
+        {onProgress ? (
+          <DropzoneStatus
+            {...props}
+            mode={mode}
+            file={
+              props.selectedFile ||
+              ({ name: props.downloadName || 'file', size: 0 } as File)
+            }
+          />
+        ) : (
+          <DropzoneIdle
+            mode={mode}
+            fileName={props.downloadName}
+            onSelect={() => inputRef.current?.click()}
+            onDownload={props.onDownload}
+          />
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          hidden
+          onChange={(e) => onFileSelect?.(e.target.files![0])}
         />
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        hidden
-        onChange={(e) => onFileSelect?.(e.target.files![0])}
-      />
+      </div>
     </div>
   );
 }
