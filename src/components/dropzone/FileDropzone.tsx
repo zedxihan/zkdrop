@@ -18,7 +18,7 @@ export default function FileDropzone(props: DropzoneProps) {
         if (mode === 'upload' && step === 'idle')
           onFileSelect?.(e.dataTransfer.files[0]);
       }}
-      className="bg-card text-text relative min-h-[320px] w-full overflow-hidden rounded-xl border-[2.5px] border-dashed transition-all duration-200 sm:min-h-[360px] md:h-[400px]"
+      className="bg-card text-text relative min-h-[320px] w-full overflow-hidden rounded-xl border-[2.5px] border-dashed border-white/70 transition-all duration-200 sm:min-h-[360px] md:h-[400px]"
     >
       <div
         aria-hidden="true"
