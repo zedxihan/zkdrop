@@ -15,7 +15,7 @@ const highlights = [
   },
   {
     icon: Clock3,
-    title: '6-hour self-expiry',
+    title: '24-hour self-expiry',
   },
 ];
 

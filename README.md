@@ -18,7 +18,7 @@
 > [!WARNING]  
 > **Privacy First:** zkDrop is a temporary file-sharing platform. While files are encrypted, the developer is not responsible for data loss due to link expiration or server-side purges.
 >
-> **Self-Destruction:** All uploaded files and their associated metadata are automatically purged after 6 hours. Once a link expires, the data is unrecoverable.
+> **Self-Destruction:** All uploaded files and their associated metadata are automatically purged after 24 hours. Once a link expires, the data is unrecoverable.
 
 ## 💖 Support Us
 
@@ -35,14 +35,14 @@
 
 **Live:** https://zkdrop.pages.dev
 
-<img width="1618" height="942" alt="xd" src="https://github.com/user-attachments/assets/9548e269-9693-4141-bf84-b0f6907660c1" />
+<img width="1650" height="936" alt="preview" src="https://github.com/user-attachments/assets/ea44a95a-6cd4-474d-9958-e68c7e2ce972" />
 
 ## Features
 
 - **True Zero-Knowledge:** Local AES-256-GCM encryption hides data and metadata before it ever leaves the browser.
 - **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, paired with a dedicated UI for seamless downloads.
 - **Frictionless Experience:** Absolutely no accounts, logins, or tracking required—just drop a file and get a link.
-- **Self-Destructing:** Files remain strictly temporary and are automatically purged after 6 hours.
+- **Self-Destructing:** Files remain strictly temporary and are automatically purged after 24 hours.
 - **Interactive Aesthetic:** A sleek, playful UI featuring `sketchbook-ui`, animated dot-grids, and GSAP interactions.
 - **Modern Performance:** Built on Vite, React 19, and Bun to deliver a lightning-fast frontend.
 - **Fast & Responsive:** A mobile-first design optimized for quick drops with a 30MB file size limit.

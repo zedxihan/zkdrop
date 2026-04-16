@@ -50,7 +50,7 @@ export async function uploadFile({
   onProgress('finalizing');
   await step(setProgress, 95, 300);
 
-  const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const [, dbResult] = await Promise.all([
     sleep(600),
