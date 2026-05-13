@@ -1,0 +1,12 @@
+name = "backend"
+main = "src/index.ts"
+compatibility_date = "2026-05-13"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "zkdrop-files"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "zkdrop-db"
+database_id = "da47f71e-bc6a-4270-a9ec-a7baa73fce5d"
