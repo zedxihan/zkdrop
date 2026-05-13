@@ -11,14 +11,15 @@ lerna-debug.log*
 .env
 .env.local
 .env.*.local
+.dev.vars
 
 node_modules
 dist
 dist-ssr
 *.local
-supabase/.temp
+.wrangler/
 
-# Editor directories and files
+# Editor directories
 .vscode
 !.vscode/extensions.json
 .idea
