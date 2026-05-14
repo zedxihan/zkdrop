@@ -57,7 +57,7 @@ export const R2 = {
           UploadId,
           PartNumber: i + 1,
         });
-        return getSignedUrl(s3, command, { expiresIn: 3600 });
+        return getSignedUrl(s3, command, { expiresIn: 900 });
       }),
     );
   },
@@ -80,7 +80,10 @@ export const R2 = {
 
   getDownloadUrl: (env: R2Env, Key: string) => {
     const s3 = getClient(env);
-    const command = new GetObjectCommand({ Bucket: env.BUCKET_NAME, Key });
-    return getSignedUrl(s3, command, { expiresIn: 3600 });
+    const command = new GetObjectCommand({
+      Bucket: env.BUCKET_NAME,
+      Key,
+    });
+    return getSignedUrl(s3, command, { expiresIn: 900 });
   },
 };

@@ -4,7 +4,7 @@ CREATE TABLE files (
   filename TEXT NOT NULL,
   size INTEGER NOT NULL,
   expires_at INTEGER NOT NULL,
-  created_at INTEGER DEFAULT (unixepoch())
+  created_at INTEGER DEFAULT (unixepoch() * 1000)
 );
 
 CREATE INDEX idx_expires ON files(expires_at);
