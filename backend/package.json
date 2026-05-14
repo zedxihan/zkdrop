@@ -1,5 +1,6 @@
 {
-  "name": "backend",
+  "name": "zkdrop-backend",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",

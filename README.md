@@ -12,7 +12,7 @@
 <img src="https://img.shields.io/github/last-commit/zedxihan/zkdrop?style=for-the-badge&logo=git&labelColor=11140F&color=BBE9AA">
 </a>
 <br>
-<img src="https://skillicons.dev/icons?i=bun,ts,vite,react,tailwind,supabase">
+<img src="https://skillicons.dev/icons?i=bun,ts,vite,react,tailwind,cloudflare">
 </h1>
 
 > [!WARNING]  
@@ -29,7 +29,9 @@
 
 ## Description
 
-`zkDrop` provides a streamlined way to share files with true **Zero-Knowledge** end-to-end encryption. Every byte is encrypted locally in your browser using **AES-256-GCM** before reaching the server. Your private keys never leave your machine—they are stored only in the URL fragment (#), ensuring total privacy.
+`zkDrop` provides a streamlined way to share files with true **Zero-Knowledge** end-to-end encryption. Every byte is encrypted locally in your browser using **AES-GCM** before reaching the server. Your private keys never leave your machine—they are stored only in the URL fragment (#), ensuring total privacy.
+
+Powered by **Cloudflare Workers**, **D1** (SQL storage), and **R2** (Object storage), with granular byte-level progress tracking via **Axios**.
 
 ## Preview
 
@@ -39,16 +41,19 @@
 
 ## Features
 
-- **True Zero-Knowledge:** Local AES-256-GCM encryption hides data and metadata before it ever leaves the browser.
-- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, paired with a dedicated UI for seamless downloads.
-- **Frictionless Experience:** Absolutely no accounts, logins, or tracking required—just drop a file and get a link.
-- **Self-Destructing:** Files remain strictly temporary and are automatically purged after 24 hours.
+- **True Zero-Knowledge:** Local AES-GCM encryption hides data and metadata before it ever leaves the browser.
+- **Off-Thread Crypto:** Encryption/decryption handled in Web Workers to keep the UI responsive.
+- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, ensuring no one (not even the server) can read your files.
+- **Frictionless Experience:** No accounts, no logins, no tracking.
+- **Self-Destructing:** Automated background cleanup for both R2 objects and D1 records every 24 hours.
+- **Granular Progress:** Byte-level tracking for uploads and downloads, providing real-time feedback even for small files.
 - **Interactive Aesthetic:** A sleek, playful UI featuring `sketchbook-ui`, animated dot-grids, and GSAP interactions.
-- **Modern Performance:** Built on Vite, React 19, and Bun to deliver a lightning-fast frontend.
-- **Fast & Responsive:** A mobile-first design optimized for quick drops with a 30MB file size limit.
+- **Modern Performance:** Built on Vite, React 19, and Bun for a lightning-fast experience.
+- **High Capacity:** Mobile-first design optimized for quick drops with a **100MB** file size limit.
 
 ## Quick Start
 
+### Frontend Setup
 Clone the project and run it locally with Bun.
 
 ```bash
@@ -56,28 +61,36 @@ Clone the project and run it locally with Bun.
 git clone https://github.com/zedxihan/zkdrop.git
 cd zkdrop
 
-# Create & switch to your branch
-git switch -c feature/awsome-feature
-
 # Install dependencies
 bun install
+
+# Create a branch for your feature
+git switch -c feat/my-awesome-feature
 
 # Start the development server
 bun run dev
 ```
 
-Open: http://localhost:5173
+### Backend Deployment (Cloudflare)
+Navigate to the `backend` directory to deploy the Worker and Database.
 
-> [!NOTE]
-> You'll need to configure your own `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in your environment variables.
+```bash
+cd backend
+# Create D1 database and R2 bucket in Cloudflare dashboard first
+# Then run migrations:
+npx wrangler d1 execute zkdrop-db --remote --file=schema.sql
+
+# Deploy the worker
+npx wrangler deploy
+```
 
 ## 🗺 Roadmap
 
-- Password-protected links
-- Custom expiration timers (1h, 12h, 24h)
-- Multiple file uploads (ZIP creation)
-- One-time download links (Burn after reading)
-- Progress notifications for large files
+- [x] Progress notifications for large files
+- [ ] Password-protected links
+- [ ] Custom expiration timers (1h, 12h, 24h)
+- [ ] Multiple file uploads (ZIP creation)
+- [ ] One-time download links (Burn after reading)
 
 ## Hacking
 
