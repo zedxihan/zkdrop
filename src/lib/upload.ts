@@ -1,76 +1,61 @@
-import { supabase } from './supabase';
-import { bufferToBase64, encryptFile, exportKey } from './encryption';
+import axios from 'axios';
 import type { UploadProps } from '../types';
+import { CryptoWorkerManager, generateEncryptionKey } from './encryption';
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function step(
-  setProgress: (v: number) => void,
-  value: number,
-  delay = 0,
-) {
-  setProgress(value);
-  if (delay) await sleep(delay);
-}
+const CHUNK_SIZE = 10 * 1024 * 1024;
 
 export async function uploadFile({
   file,
   onProgress,
   setProgress,
 }: UploadProps): Promise<string> {
+  const { rawKey, keyHex } = generateEncryptionKey();
+
   onProgress('encrypting');
-  await step(setProgress, 10, 600);
-  await step(setProgress, 25);
+  const {
+    data: { id, uploadId, partUrls },
+  } = await axios.post('/api/upload/init', { size: file.size });
 
-  const { encryptedBuffer, key } = await encryptFile(file);
-  await step(setProgress, 35, 600);
+  const worker = new CryptoWorkerManager();
+  const partLoaded = new Array<number>(partUrls.length).fill(0);
 
-  const rawKey = await exportKey(key);
-  const base64Key = bufferToBase64(rawKey);
+  const trackProgress = (i: number, loaded: number) => {
+    partLoaded[i] = loaded;
+    const total = partLoaded.reduce((a, b) => a + b, 0);
+    setProgress(Math.min(99, Math.round((total / file.size) * 100)));
+  };
 
-  const filePath = `${crypto.randomUUID().slice(0, 12)}.enc`;
-  const encryptedFile = new Blob([encryptedBuffer], {
-    type: 'application/octet-stream',
-  });
+  try {
+    onProgress('uploading');
+    const parts: { PartNumber: number; ETag: string }[] = [];
 
-  onProgress('uploading');
-  await step(setProgress, 45, 200);
-  await step(setProgress, 70, 200);
+    for (const [i, url] of partUrls.entries()) {
+      const chunk = await file
+        .slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+        .arrayBuffer();
+      const encrypted = await worker.processChunk('ENCRYPT', chunk, rawKey);
 
-  const { error } = await supabase.storage
-    .from('files')
-    .upload(filePath, encryptedFile);
+      const { headers } = await axios.put(url, encrypted, {
+        onUploadProgress: (e) => trackProgress(i, e.loaded ?? 0),
+      });
+      if (!headers.etag) throw new Error(`No ETag for part ${i + 1}`);
+      parts.push({ PartNumber: i + 1, ETag: headers.etag });
+    }
 
-  if (error) {
-    console.error('Failed to upload file:', error.message);
-    throw error;
+    setProgress(100);
+
+    onProgress('finalizing');
+    await axios.post('/api/upload/complete', {
+      id,
+      uploadId,
+      parts,
+      fileName: file.name,
+      size: file.size,
+    });
+
+    onProgress('done');
+    return `${location.origin}/file/${id}#${keyHex}`;
+  } finally {
+    worker.terminate();
   }
-  await step(setProgress, 90);
-
-  onProgress('finalizing');
-  await step(setProgress, 95, 300);
-
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-  const [, dbResult] = await Promise.all([
-    sleep(600),
-    supabase.from('files-table').insert({
-      file_path: filePath,
-      expires_at: expiresAt.toISOString(),
-    }),
-  ]);
-
-  if (dbResult.error) {
-    await supabase.storage.from('files').remove([filePath]);
-    console.error('Failed to insert metadata:', dbResult.error.message);
-    throw dbResult.error;
-  }
-
-  const shareableLink = `${window.location.origin}/file/${encodeURIComponent(
-    filePath,
-  )}#${base64Key}`;
-
-  await step(setProgress, 100);
-  onProgress('done');
-  return shareableLink;
 }

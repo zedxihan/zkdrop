@@ -1,46 +1,57 @@
-import { supabase } from './supabase';
-import { decryptFile } from './encryption';
+import axios from 'axios';
 import type { DownloadProps } from '../types';
+import { CryptoWorkerManager, parseKeyHex } from './encryption';
+
+// 10MB + iv + tag
+const ENC_CHUNK_SIZE = 10 * 1024 * 1024 + 12 + 16;
 
 export async function downloadFile({
   fileId,
-  cryptoKey,
+  keyHex,
   onProgress,
   setProgress,
 }: DownloadProps) {
   onProgress('fetching');
-  setProgress(30);
+  const {
+    data: { url, filename },
+  } = await axios.get(`/api/file/download/${fileId}`);
 
-  const { data, error } = await supabase.storage
-    .from('files')
-    .createSignedUrl(fileId, 60);
-
-  if (error) throw error;
-
-  const res = await fetch(data.signedUrl);
-  if (!res.ok) throw new Error('Failed to fetch encrypted file');
-  const encryptedPayload = await res.arrayBuffer();
-
-  onProgress('decrypting');
-  setProgress(75);
-
-  const { fileBytes, metadata } = await decryptFile(
-    encryptedPayload,
-    cryptoKey,
-  );
-
-  const blob = new Blob([fileBytes], {
-    type: metadata.type || 'application/octet-stream',
+  const { data: encryptedPayload } = await axios.get<ArrayBuffer>(url, {
+    responseType: 'arraybuffer',
+    onDownloadProgress: (e) =>
+      e.total && setProgress(Math.round((e.loaded / e.total) * 100)),
   });
-  const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = metadata.name;
-  a.click();
+  const worker = new CryptoWorkerManager();
+  const rawKey = parseKeyHex(keyHex);
+  const totalChunks = Math.ceil(encryptedPayload.byteLength / ENC_CHUNK_SIZE);
 
-  URL.revokeObjectURL(url);
+  setProgress(0);
+  onProgress('decrypting');
 
-  setProgress(100);
-  onProgress('done');
+  try {
+    const decryptedChunks: ArrayBuffer[] = [];
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = encryptedPayload.slice(
+        i * ENC_CHUNK_SIZE,
+        (i + 1) * ENC_CHUNK_SIZE,
+      );
+      decryptedChunks.push(await worker.processChunk('DECRYPT', chunk, rawKey));
+      setProgress(Math.round(((i + 1) / totalChunks) * 100));
+    }
+
+    const blob = new Blob(decryptedChunks, {
+      type: 'application/octet-stream',
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+
+    onProgress('done');
+  } finally {
+    worker.terminate();
+  }
 }
