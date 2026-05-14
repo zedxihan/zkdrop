@@ -1,4 +1,4 @@
-name = "backend"
+name = "zkdrop-backend"
 main = "src/index.ts"
 compatibility_date = "2026-05-13"
 
@@ -10,3 +10,12 @@ bucket_name = "zkdrop-files"
 binding = "DB"
 database_name = "zkdrop-db"
 database_id = "da47f71e-bc6a-4270-a9ec-a7baa73fce5d"
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[observability]
+enabled = true
+
+[observability.logs]
+invocation_logs = true

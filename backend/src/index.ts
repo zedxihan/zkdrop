@@ -1,3 +1,7 @@
+import type {
+  ExecutionContext,
+  ScheduledEvent,
+} from '@cloudflare/workers-types';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { R2, type R2Env } from './lib/r2';
@@ -78,4 +82,34 @@ app.get('/api/file/download/:id', async (c) => {
   });
 });
 
-export default app;
+// cron
+export default {
+  fetch: app.fetch,
+
+  async scheduled(_event: ScheduledEvent, env: R2Env, ctx: ExecutionContext) {
+    ctx.waitUntil(this.handleCleanup(env));
+  },
+
+  async handleCleanup(env: R2Env) {
+    const now = Date.now();
+
+    const { results } = await env.DB.prepare(
+      'SELECT r2_key FROM files WHERE expires_at < ? LIMIT 1000',
+    )
+      .bind(now)
+      .all<{ r2_key: string }>();
+
+    if (!results?.length) return;
+    console.log(`Cleaning up ${results.length} files...`);
+
+    const keys = results.map((f) => f.r2_key);
+    await R2.deleteFile(env, keys);
+
+    const placeholders = keys.map(() => '?').join(',');
+    await env.DB.prepare(`DELETE FROM files WHERE r2_key IN (${placeholders})`)
+      .bind(...keys)
+      .run();
+
+    console.log('Cleanup successful.');
+  },
+};

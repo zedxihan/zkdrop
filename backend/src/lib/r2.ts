@@ -1,6 +1,7 @@
 import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   S3Client,
   UploadPartCommand,
@@ -85,5 +86,17 @@ export const R2 = {
       Key,
     });
     return getSignedUrl(s3, command, { expiresIn: 900 });
+  },
+
+  deleteFile: (env: R2Env, keys: string[]) => {
+    const s3 = getClient(env);
+    const command = new DeleteObjectsCommand({
+      Bucket: env.BUCKET_NAME,
+      Delete: {
+        Objects: keys.map((key) => ({ Key: key })),
+        Quiet: true,
+      },
+    });
+    return s3.send(command);
   },
 };
