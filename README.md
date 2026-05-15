@@ -12,7 +12,7 @@
 <img src="https://img.shields.io/github/last-commit/zedxihan/zkdrop?style=for-the-badge&logo=git&labelColor=11140F&color=BBE9AA">
 </a>
 <br>
-<img src="https://skillicons.dev/icons?i=bun,ts,vite,react,tailwind,supabase">
+<img src="https://skillicons.dev/icons?i=bun,ts,vite,react,tailwind,cloudflare">
 </h1>
 
 > [!WARNING]  
@@ -29,55 +29,75 @@
 
 ## Description
 
-`zkDrop` provides a streamlined way to share files with true **Zero-Knowledge** end-to-end encryption. Every byte is encrypted locally in your browser using **AES-256-GCM** before reaching the server. Your private keys never leave your machine—they are stored only in the URL fragment (#), ensuring total privacy.
+`zkDrop` provides a streamlined way to share files with true **Zero-Knowledge** end-to-end encryption. Every byte is encrypted locally in your browser using **AES-GCM** before reaching the server. Your private keys never leave your machine—they are stored only in the URL fragment (#), ensuring total privacy.
 
 ## Preview
 
 **Live:** https://zkdrop.pages.dev
 
-<img width="1650" height="936" alt="preview" src="https://github.com/user-attachments/assets/ea44a95a-6cd4-474d-9958-e68c7e2ce972" />
+<img width="1560" height="936" alt="preview" src="https://github.com/user-attachments/assets/03a3294d-6f22-4210-8d22-4d37c5c65387" />
 
 ## Features
 
-- **True Zero-Knowledge:** Local AES-256-GCM encryption hides data and metadata before it ever leaves the browser.
-- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, paired with a dedicated UI for seamless downloads.
-- **Frictionless Experience:** Absolutely no accounts, logins, or tracking required—just drop a file and get a link.
-- **Self-Destructing:** Files remain strictly temporary and are automatically purged after 24 hours.
-- **Interactive Aesthetic:** A sleek, playful UI featuring `sketchbook-ui`, animated dot-grids, and GSAP interactions.
-- **Modern Performance:** Built on Vite, React 19, and Bun to deliver a lightning-fast frontend.
-- **Fast & Responsive:** A mobile-first design optimized for quick drops with a 30MB file size limit.
+- **Zero-Knowledge:** Local AES-GCM encryption ensures your data stays private from everyone.
+- **Off-Thread Crypto:** Web Workers keep the UI smooth during encryption/decryption.
+- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment.
+- **Frictionless:** No accounts, no logins, no tracking—just drop and share.
+- **Self-Destructing:** Automatic 24-hour purging of all files and metadata.
+- **Granular Progress:** Byte-level real-time feedback powered by **Axios**.
+- **Modern UI:** Interactive aesthetic featuring `sketchbook-ui` and GSAP.
+- **Serverless Stack:** High-performance architecture on **Cloudflare (Workers, D1, R2)**.
+- **100MB Limit:** Optimized for quick, high-capacity secure transfers.
 
-## Quick Start
+## 🚀 Quick Start
 
-Clone the project and run it locally with Bun.
+### 1. Setup & Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/zedxihan/zkdrop.git
-cd zkdrop
-
-# Create & switch to your branch
-git switch -c feature/awsome-feature
-
-# Install dependencies
+git clone https://github.com/zedxihan/zkdrop.git && cd zkdrop
 bun install
 
-# Start the development server
-bun run dev
+# Optional: Create a branch for your feature
+git switch -c feat/my-awesome-feature
 ```
 
-Open: http://localhost:5173
+### 2. Backend Configuration
 
-> [!NOTE]
-> You'll need to configure your own `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in your environment variables.
+Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then:
+
+1. Update `backend/wrangler.toml` with your own IDs:
+   ```toml
+   bucket_name = "your-bucket"
+   database_id = "your-d1-id"
+   ```
+2. Deploy & Migrate:
+   ```bash
+   cd backend
+   npx wrangler d1 execute your-db-name --remote --file=schema.sql
+   npx wrangler deploy
+   ```
+
+### 3. Frontend Configuration
+
+1. Set your backend URL in a `.env` file (and in Cloudflare Pages settings for production):
+   ```env
+   VITE_API_URL=https://your-worker.workers.dev
+   ```
+2. Start the development server:
+   ```bash
+   bun run dev
+   ```
+
+> [!IMPORTANT]
+> Never use the default `database_id` in the repo; it belongs to the production instance and you will not have access to it.
 
 ## 🗺 Roadmap
 
-- Password-protected links
-- Custom expiration timers (1h, 12h, 24h)
-- Multiple file uploads (ZIP creation)
-- One-time download links (Burn after reading)
-- Progress notifications for large files
+- [x] Progress notifications for large files
+- [ ] Password-protected links
+- [ ] Custom expiration timers (1h, 12h, 24h)
+- [ ] Multiple file uploads (ZIP creation)
+- [ ] One-time download links (Burn after reading)
 
 ## Hacking
 

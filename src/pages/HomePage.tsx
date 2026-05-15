@@ -18,7 +18,7 @@ export default function HomePage() {
   });
 
   const handleFileSelect = (file: File) => {
-    if (file.size > 30 * 1024 * 1024) return alert('File must be under 30MB');
+    if (file.size > 100 * 1024 * 1024) return alert('File must be under 100MB');
 
     mutate({
       file,

@@ -1,86 +1,46 @@
-import type { EncryptedFile } from '../types';
-
-// converters
-export function bufferToBase64(input: ArrayBuffer | Uint8Array): string {
-  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
-  return btoa(String.fromCharCode(...bytes));
+// parsers
+export function generateEncryptionKey() {
+  const rawKey = crypto.getRandomValues(new Uint8Array(32));
+  const keyHex = Array.from(rawKey)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return { rawKey, keyHex };
 }
 
-export function base64ToBuffer(base64: string): ArrayBuffer {
-  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)).buffer;
+export function parseKeyHex(keyHex: string): Uint8Array {
+  const rawKey = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    rawKey[i] = parseInt(keyHex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return rawKey;
 }
 
-// export-import
-export const exportKey = (key: CryptoKey): Promise<ArrayBuffer> =>
-  crypto.subtle.exportKey('raw', key);
+// worker manager
+export class CryptoWorkerManager {
+  private worker: Worker;
 
-export const importKey = (rawKey: ArrayBuffer): Promise<CryptoKey> =>
-  crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, [
-    'decrypt',
-  ]);
+  constructor() {
+    this.worker = new Worker(new URL('./crypto.worker.ts', import.meta.url), {
+      type: 'module',
+    });
+  }
 
-/*---- Encrypt file ----*/
-export async function encryptFile(file: File): Promise<EncryptedFile> {
-  const meta = new TextEncoder().encode(
-    JSON.stringify({
-      name: file.name,
-      type: file.type,
-    }),
-  );
+  async processChunk(
+    type: 'ENCRYPT' | 'DECRYPT',
+    chunk: ArrayBuffer,
+    rawKey: Uint8Array,
+  ): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      this.worker.onmessage = (e) => {
+        if (e.data.type === 'SUCCESS') resolve(e.data.payload);
+        else reject(new Error(`Worker Error: ${e.data.error}`));
+      };
 
-  const combinedBlob = new Blob([new Uint32Array([meta.length]), meta, file]);
-  const merged = new Uint8Array(await combinedBlob.arrayBuffer());
-
-  const key = await crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt'],
-  );
-
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    merged,
-  );
-
-  const payload = new Uint8Array(12 + encrypted.byteLength);
-  payload.set(iv, 0);
-  payload.set(new Uint8Array(encrypted), 12);
-
-  return {
-    encryptedBuffer: payload.buffer,
-    key,
-  };
-}
-
-/*---- Decrypt file ----*/
-export async function decryptFile(
-  encryptedPayload: ArrayBuffer,
-  key: CryptoKey,
-): Promise<{
-  fileBytes: ArrayBuffer;
-  metadata: { name: string; type: string };
-}> {
-  const bytes = new Uint8Array(encryptedPayload);
-
-  const iv = bytes.slice(0, 12);
-  const encrypted = bytes.slice(12);
-
-  const decrypted = new Uint8Array(
-    await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted),
-  );
-
-  const metaLength = new Uint32Array(decrypted.slice(0, 4).buffer)[0];
-
-  const metaBytes = decrypted.slice(4, 4 + metaLength);
-  const metadata = JSON.parse(new TextDecoder().decode(metaBytes));
-
-  const fileBytes = decrypted.slice(4 + metaLength).buffer;
-
-  return {
-    fileBytes,
-    metadata,
-  };
+      // send as obj
+      this.worker.postMessage({ type, chunk, rawKey }, [chunk]);
+    });
+  }
+  terminate() {
+    this.worker.terminate();
+  }
 }
