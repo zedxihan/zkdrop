@@ -31,58 +31,65 @@
 
 `zkDrop` provides a streamlined way to share files with true **Zero-Knowledge** end-to-end encryption. Every byte is encrypted locally in your browser using **AES-GCM** before reaching the server. Your private keys never leave your machine—they are stored only in the URL fragment (#), ensuring total privacy.
 
-Powered by **Cloudflare Workers**, **D1** (SQL storage), and **R2** (Object storage), with granular byte-level progress tracking via **Axios**.
-
 ## Preview
 
 **Live:** https://zkdrop.pages.dev
 
-<img width="1650" height="936" alt="preview" src="https://github.com/user-attachments/assets/ea44a95a-6cd4-474d-9958-e68c7e2ce972" />
+<img width="1560" height="936" alt="preview" src="https://github.com/user-attachments/assets/03a3294d-6f22-4210-8d22-4d37c5c65387" />
 
 ## Features
 
-- **True Zero-Knowledge:** Local AES-GCM encryption hides data and metadata before it ever leaves the browser.
-- **Off-Thread Crypto:** Encryption/decryption handled in Web Workers to keep the UI responsive.
-- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment, ensuring no one (not even the server) can read your files.
-- **Frictionless Experience:** No accounts, no logins, no tracking.
-- **Self-Destructing:** Automated background cleanup for both R2 objects and D1 records every 24 hours.
-- **Granular Progress:** Byte-level tracking for uploads and downloads, providing real-time feedback even for small files.
-- **Interactive Aesthetic:** A sleek, playful UI featuring `sketchbook-ui`, animated dot-grids, and GSAP interactions.
-- **Modern Performance:** Built on Vite, React 19, and Bun for a lightning-fast experience.
-- **High Capacity:** Mobile-first design optimized for quick drops with a **100MB** file size limit.
+- **Zero-Knowledge:** Local AES-GCM encryption ensures your data stays private from everyone.
+- **Off-Thread Crypto:** Web Workers keep the UI smooth during encryption/decryption.
+- **Secure Sharing:** Private keys stay exclusively in the URL `#` fragment.
+- **Frictionless:** No accounts, no logins, no tracking—just drop and share.
+- **Self-Destructing:** Automatic 24-hour purging of all files and metadata.
+- **Granular Progress:** Byte-level real-time feedback powered by **Axios**.
+- **Modern UI:** Interactive aesthetic featuring `sketchbook-ui` and GSAP.
+- **Serverless Stack:** High-performance architecture on **Cloudflare (Workers, D1, R2)**.
+- **100MB Limit:** Optimized for quick, high-capacity secure transfers.
 
-## Quick Start
+## 🚀 Quick Start
 
-### Frontend Setup
-Clone the project and run it locally with Bun.
+### 1. Setup & Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/zedxihan/zkdrop.git
-cd zkdrop
-
-# Install dependencies
+git clone https://github.com/zedxihan/zkdrop.git && cd zkdrop
 bun install
 
-# Create a branch for your feature
+# Optional: Create a branch for your feature
 git switch -c feat/my-awesome-feature
-
-# Start the development server
-bun run dev
 ```
 
-### Backend Deployment (Cloudflare)
-Navigate to the `backend` directory to deploy the Worker and Database.
+### 2. Backend Configuration
 
-```bash
-cd backend
-# Create D1 database and R2 bucket in Cloudflare dashboard first
-# Then run migrations:
-npx wrangler d1 execute zkdrop-db --remote --file=schema.sql
+Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then:
 
-# Deploy the worker
-npx wrangler deploy
-```
+1. Update `backend/wrangler.toml` with your own IDs:
+   ```toml
+   bucket_name = "your-bucket"
+   database_id = "your-d1-id"
+   ```
+2. Deploy & Migrate:
+   ```bash
+   cd backend
+   npx wrangler d1 execute your-db-name --remote --file=schema.sql
+   npx wrangler deploy
+   ```
+
+### 3. Frontend Configuration
+
+1. Set your backend URL in a `.env` file (and in Cloudflare Pages settings for production):
+   ```env
+   VITE_API_URL=https://your-worker.workers.dev
+   ```
+2. Start the development server:
+   ```bash
+   bun run dev
+   ```
+
+> [!IMPORTANT]
+> Never use the default `database_id` in the repo; it belongs to the production instance and you will not have access to it.
 
 ## 🗺 Roadmap
 

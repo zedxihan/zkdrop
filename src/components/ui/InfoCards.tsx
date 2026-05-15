@@ -51,11 +51,11 @@ export default function InfoCards() {
           variant="paper"
           colors={cardColors}
         >
-          <div className="flex h-full w-full flex-row items-center justify-center gap-4 sm:gap-6">
+          <div className="flex h-full w-full flex-row items-center justify-center gap-2 sm:gap-4">
             {/* Left Column */}
             <div className="flex flex-col items-center justify-center">
-              <span className="text-4xl leading-none font-bold text-[#f3ba61] italic sm:text-5xl">
-                30MB
+              <span className="text-3xl leading-none font-bold text-[#f3ba61] italic sm:text-4xl">
+                100MB
               </span>
               <span className="text-muted mt-2 text-center text-xs leading-none font-semibold tracking-widest uppercase">
                 Max File
