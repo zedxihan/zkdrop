@@ -65,6 +65,19 @@ app.post('/api/upload/complete', async (c) => {
   return c.json({ success: true, id });
 });
 
+// abort
+app.post('/api/upload/abort', async (c) => {
+  const { id, uploadId } = await c.req.json();
+
+  if (!id || !uploadId) {
+    return c.json({ error: 'Invalid payload' }, 400);
+  }
+  const r2_key = `files/${id}`;
+  await R2.abortMultipart(c.env, r2_key, uploadId);
+
+  return c.json({ success: true });
+});
+
 // download
 app.get('/api/file/download/:id', async (c) => {
   const file = await c.env.DB.prepare(`SELECT * FROM files WHERE id = ?`)

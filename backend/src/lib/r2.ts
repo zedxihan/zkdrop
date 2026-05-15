@@ -1,16 +1,14 @@
 import {
-  CompleteMultipartUploadCommand,
-  CreateMultipartUploadCommand,
-  DeleteObjectsCommand,
   GetObjectCommand,
   S3Client,
   UploadPartCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
 
 export interface R2Env {
   DB: D1Database;
+  BUCKET: R2Bucket;
   BUCKET_NAME: string;
   R2_ACCOUNT_ID: string;
   R2_ACCESS_KEY_ID: string;
@@ -32,13 +30,8 @@ const getClient = (env: R2Env) =>
 
 export const R2 = {
   startMultipart: async (env: R2Env, Key: string) => {
-    const s3 = getClient(env);
-    const command = new CreateMultipartUploadCommand({
-      Bucket: env.BUCKET_NAME,
-      Key,
-    });
-    const res = await s3.send(command);
-    return res.UploadId as string;
+    const upload = await env.BUCKET.createMultipartUpload(Key);
+    return upload.uploadId;
   },
 
   getChunkUrls: (
@@ -69,14 +62,19 @@ export const R2 = {
     UploadId: string,
     Parts: { ETag: string; PartNumber: number }[],
   ) => {
-    const s3 = getClient(env);
-    const command = new CompleteMultipartUploadCommand({
-      Bucket: env.BUCKET_NAME,
-      Key,
-      UploadId,
-      MultipartUpload: { Parts },
-    });
-    return s3.send(command);
+    const upload = env.BUCKET.resumeMultipartUpload(Key, UploadId);
+
+    const uploadedParts = Parts.map((p) => ({
+      etag: p.ETag.replace(/^"|"$/g, ''), // trim quotes
+      partNumber: p.PartNumber,
+    }));
+
+    return upload.complete(uploadedParts);
+  },
+
+  abortMultipart: (env: R2Env, Key: string, UploadId: string) => {
+    const upload = env.BUCKET.resumeMultipartUpload(Key, UploadId);
+    return upload.abort();
   },
 
   getDownloadUrl: (env: R2Env, Key: string) => {
@@ -89,14 +87,6 @@ export const R2 = {
   },
 
   deleteFile: (env: R2Env, keys: string[]) => {
-    const s3 = getClient(env);
-    const command = new DeleteObjectsCommand({
-      Bucket: env.BUCKET_NAME,
-      Delete: {
-        Objects: keys.map((key) => ({ Key: key })),
-        Quiet: true,
-      },
-    });
-    return s3.send(command);
+    return env.BUCKET.delete(keys);
   },
 };
