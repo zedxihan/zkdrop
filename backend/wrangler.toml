@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2026-05-13"
 compatibility_flags = [ "nodejs_compat" ]
 
+[[ratelimits]]
+binding = "RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 3, period = 60 }
+
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "zkdrop-files"

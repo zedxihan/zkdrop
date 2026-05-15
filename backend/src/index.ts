@@ -29,6 +29,12 @@ app.use('/api/*', async (c, next) => {
 
 // upload
 app.post('/api/upload/init', async (c) => {
+  // rate-limit
+  const ip = c.req.header('cf-connecting-ip') || 'unknown';
+  const { success } = await c.env.RATE_LIMITER.limit({ key: `upload:${ip}` });
+  if (!success)
+    return c.json({ error: 'Too many upload attempts. Please wait.' }, 429);
+
   const { size } = await c.req.json();
 
   if (!size || size <= 0 || size > MAX_FILE_SIZE) {

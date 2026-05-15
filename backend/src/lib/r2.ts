@@ -1,4 +1,8 @@
-import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import type {
+  D1Database,
+  R2Bucket,
+  RateLimit,
+} from '@cloudflare/workers-types';
 import { AwsClient } from 'aws4fetch';
 
 export interface R2Env {
@@ -8,6 +12,7 @@ export interface R2Env {
   R2_ACCOUNT_ID: string;
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
+  RATE_LIMITER: RateLimit;
   FRONTEND_URL?: string;
 }
 
