@@ -19,7 +19,13 @@ interface FileRecord {
   expires_at: number;
 }
 
-app.use('/api/*', cors());
+app.use('/api/*', async (c, next) => {
+  const corsMiddleware = cors({
+    origin: c.env.FRONTEND_URL,
+    allowMethods: ['POST', 'GET', 'OPTIONS'],
+  });
+  return corsMiddleware(c, next);
+});
 
 // upload
 app.post('/api/upload/init', async (c) => {
@@ -29,7 +35,7 @@ app.post('/api/upload/init', async (c) => {
     return c.json({ error: 'Invalid file size' }, 400);
   }
 
-  const id = crypto.randomUUID();
+  const id = crypto.randomUUID().slice(0, 8);
   const r2_key = `files/${id}`;
 
   const uploadId = await R2.startMultipart(c.env, r2_key);
@@ -54,14 +60,13 @@ app.post('/api/upload/complete', async (c) => {
   const r2_key = `files/${id}`;
   const expires_at = Date.now() + EXPIRY_TIME;
 
-  await Promise.all([
-    R2.completeMultipart(c.env, r2_key, uploadId, parts),
-    c.env.DB.prepare(
-      `INSERT INTO files (id, r2_key, filename, size, expires_at) VALUES (?, ?, ?, ?, ?)`,
-    )
-      .bind(id, r2_key, fileName, size, expires_at)
-      .run(),
-  ]);
+  await R2.completeMultipart(c.env, r2_key, uploadId, parts);
+  await c.env.DB.prepare(
+    `INSERT INTO files (id, r2_key, filename, size, expires_at) VALUES (?, ?, ?, ?, ?)`,
+  )
+    .bind(id, r2_key, fileName, size, expires_at)
+    .run();
+
   return c.json({ success: true, id });
 });
 

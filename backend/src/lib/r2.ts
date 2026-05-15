@@ -1,10 +1,5 @@
-import {
-  GetObjectCommand,
-  S3Client,
-  UploadPartCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import { AwsClient } from 'aws4fetch';
 
 export interface R2Env {
   DB: D1Database;
@@ -13,26 +8,41 @@ export interface R2Env {
   R2_ACCOUNT_ID: string;
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
+  FRONTEND_URL?: string;
 }
 
-let client: S3Client | null = null;
 const CHUNK_SIZE = 10 * 1024 * 1024;
 
+let cachedClient: AwsClient | null = null;
 const getClient = (env: R2Env) =>
-  (client ??= new S3Client({
+  (cachedClient ??= new AwsClient({
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
     region: 'auto',
-    endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: env.R2_ACCESS_KEY_ID,
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-    },
+    service: 's3',
   }));
 
+// helper
+const createSignedRequest = (
+  env: R2Env,
+  Key: string,
+  method: 'GET' | 'PUT',
+  params: Record<string, string> = {},
+) => {
+  const url = new URL(`https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`);
+  url.pathname = `/${env.BUCKET_NAME}/${Key}`;
+
+  url.searchParams.set('X-Amz-Expires', '900');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  const aws = getClient(env);
+  return aws.sign(url, { method, aws: { signQuery: true } });
+};
+
+// Main
 export const R2 = {
-  startMultipart: async (env: R2Env, Key: string) => {
-    const upload = await env.BUCKET.createMultipartUpload(Key);
-    return upload.uploadId;
-  },
+  startMultipart: async (env: R2Env, Key: string) =>
+    (await env.BUCKET.createMultipartUpload(Key)).uploadId,
 
   getChunkUrls: (
     env: R2Env,
@@ -40,18 +50,15 @@ export const R2 = {
     fileSize: number,
     UploadId: string,
   ) => {
-    const s3 = getClient(env);
     const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
 
     return Promise.all(
-      Array.from({ length: totalChunks }, (_, i) => {
-        const command = new UploadPartCommand({
-          Bucket: env.BUCKET_NAME,
-          Key,
-          UploadId,
-          PartNumber: i + 1,
+      Array.from({ length: totalChunks }, async (_, i) => {
+        const signed = await createSignedRequest(env, Key, 'PUT', {
+          uploadId: UploadId,
+          partNumber: String(i + 1),
         });
-        return getSignedUrl(s3, command, { expiresIn: 900 });
+        return signed.url;
       }),
     );
   },
@@ -68,25 +75,16 @@ export const R2 = {
       etag: p.ETag.replace(/^"|"$/g, ''), // trim quotes
       partNumber: p.PartNumber,
     }));
-
     return upload.complete(uploadedParts);
   },
 
-  abortMultipart: (env: R2Env, Key: string, UploadId: string) => {
-    const upload = env.BUCKET.resumeMultipartUpload(Key, UploadId);
-    return upload.abort();
+  abortMultipart: (env: R2Env, Key: string, UploadId: string) =>
+    env.BUCKET.resumeMultipartUpload(Key, UploadId).abort(),
+
+  getDownloadUrl: async (env: R2Env, Key: string) => {
+    const signed = await createSignedRequest(env, Key, 'GET');
+    return signed.url;
   },
 
-  getDownloadUrl: (env: R2Env, Key: string) => {
-    const s3 = getClient(env);
-    const command = new GetObjectCommand({
-      Bucket: env.BUCKET_NAME,
-      Key,
-    });
-    return getSignedUrl(s3, command, { expiresIn: 900 });
-  },
-
-  deleteFile: (env: R2Env, keys: string[]) => {
-    return env.BUCKET.delete(keys);
-  },
+  deleteFile: (env: R2Env, keys: string[]) => env.BUCKET.delete(keys),
 };
