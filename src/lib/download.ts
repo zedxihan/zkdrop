@@ -1,3 +1,4 @@
+import api from './api';
 import axios from 'axios';
 import type { DownloadProps } from '../types';
 import { CryptoWorkerManager, parseKeyHex } from './encryption';
@@ -14,7 +15,7 @@ export async function downloadFile({
   onProgress('fetching');
   const {
     data: { url, filename },
-  } = await axios.get(`/api/file/download/${fileId}`);
+  } = await api.get(`/api/file/download/${fileId}`);
 
   const { data: encryptedPayload } = await axios.get<ArrayBuffer>(url, {
     responseType: 'arraybuffer',

@@ -1,3 +1,4 @@
+import api from './api';
 import axios from 'axios';
 import type { UploadProps } from '../types';
 import { CryptoWorkerManager, generateEncryptionKey } from './encryption';
@@ -14,7 +15,7 @@ export async function uploadFile({
   onProgress('encrypting');
   const {
     data: { id, uploadId, partUrls },
-  } = await axios.post('/api/upload/init', { size: file.size });
+  } = await api.post('/api/upload/init', { size: file.size });
 
   const worker = new CryptoWorkerManager();
   const partLoaded = new Array<number>(partUrls.length).fill(0);
@@ -45,7 +46,7 @@ export async function uploadFile({
     setProgress(100);
 
     onProgress('finalizing');
-    await axios.post('/api/upload/complete', {
+    await api.post('/api/upload/complete', {
       id,
       uploadId,
       parts,
@@ -55,6 +56,9 @@ export async function uploadFile({
 
     onProgress('done');
     return `${location.origin}/file/${id}#${keyHex}`;
+  } catch (error) {
+    await api.post('/api/upload/abort', { id, uploadId }).catch(console.error);
+    throw error;
   } finally {
     worker.terminate();
   }
