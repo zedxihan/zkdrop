@@ -11,11 +11,14 @@ export async function downloadFile({
   keyHex,
   onProgress,
   setProgress,
+  onMeta,
 }: DownloadProps) {
   onProgress('fetching');
   const {
-    data: { url, filename },
+    data: { url, filename, size },
   } = await api.get(`/api/file/download/${fileId}`);
+
+  if (onMeta) onMeta({ name: filename, size });
 
   const { data: encryptedPayload } = await axios.get<ArrayBuffer>(url, {
     responseType: 'arraybuffer',
