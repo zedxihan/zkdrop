@@ -12,6 +12,10 @@ export default function FilePage() {
 
   const [step, setStep] = useState<ProgressStep>('idle');
   const [progress, setProgress] = useState(0);
+  const [fileMeta, setFileMeta] = useState<{ name: string; size: number }>({
+    name: 'Encrypted File',
+    size: 0,
+  });
 
   const { mutate, error } = useMutation({
     mutationFn: downloadFile,
@@ -28,6 +32,7 @@ export default function FilePage() {
       keyHex,
       onProgress: setStep,
       setProgress,
+      onMeta: setFileMeta,
     });
   };
 
@@ -47,8 +52,8 @@ export default function FilePage() {
         mode="download"
         step={step}
         progress={progress}
-        selectedFile={{ name: 'Encrypted File', size: 0 } as unknown as File}
-        downloadName="Encrypted File"
+        selectedFile={fileMeta as unknown as File}
+        downloadName={fileMeta.name}
         onDownload={handleDownload}
       />
     </Container>

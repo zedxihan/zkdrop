@@ -68,4 +68,5 @@ export interface DownloadProps {
   keyHex: string;
   onProgress: (step: ProgressStep) => void;
   setProgress: (value: number) => void;
+  onMeta?: (meta: { name: string; size: number }) => void;
 }
