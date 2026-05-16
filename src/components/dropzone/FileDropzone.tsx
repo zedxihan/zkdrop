@@ -48,7 +48,6 @@ export default function FileDropzone(props: DropzoneProps) {
                 size: 0,
               }
             }
-
           />
         ) : (
           <DropzoneIdle

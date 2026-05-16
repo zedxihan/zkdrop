@@ -53,7 +53,6 @@ export default function FilePage() {
         step={step}
         progress={progress}
         selectedFile={fileMeta}
-
         downloadName={fileMeta.name}
         onDownload={handleDownload}
       />

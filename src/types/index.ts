@@ -46,7 +46,6 @@ export interface StatusViewProps {
   onDownload?: () => void;
 }
 
-
 export interface ActionButtonProps {
   icon: ReactNode;
   label: string;
