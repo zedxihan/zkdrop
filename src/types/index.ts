@@ -65,7 +65,7 @@ export interface UploadProps {
 
 export interface DownloadProps {
   fileId: string;
-  keyHex: string;
+  base64Key: string;
   onProgress: (step: ProgressStep) => void;
   setProgress: (value: number) => void;
   onMeta?: (meta: { name: string; size: number }) => void;

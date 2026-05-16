@@ -1,7 +1,11 @@
-import api from './api';
 import axios from 'axios';
 import type { UploadProps } from '../types';
-import { CryptoWorkerManager, generateEncryptionKey } from './encryption';
+import api from './api';
+import {
+  CryptoWorkerManager,
+  generateEncryptionKey,
+  toBase64,
+} from './encryption';
 
 const CHUNK_SIZE = 10 * 1024 * 1024;
 
@@ -10,7 +14,7 @@ export async function uploadFile({
   onProgress,
   setProgress,
 }: UploadProps): Promise<string> {
-  const { rawKey, keyHex } = generateEncryptionKey();
+  const { rawKey, base64Key } = generateEncryptionKey();
 
   onProgress('encrypting');
   const {
@@ -18,11 +22,11 @@ export async function uploadFile({
   } = await api.post('/api/upload/init', { size: file.size });
 
   const worker = new CryptoWorkerManager();
-  const partLoaded = new Array<number>(partUrls.length).fill(0);
-
+  const loadedParts = new Array(partUrls.length).fill(0);
+  // progress bar
   const trackProgress = (i: number, loaded: number) => {
-    partLoaded[i] = loaded;
-    const total = partLoaded.reduce((a, b) => a + b, 0);
+    loadedParts[i] = loaded;
+    const total = loadedParts.reduce((a, b) => a + b, 0);
     setProgress(Math.min(99, Math.round((total / file.size) * 100)));
   };
 
@@ -39,23 +43,30 @@ export async function uploadFile({
       const { headers } = await axios.put(url, encrypted, {
         onUploadProgress: (e) => trackProgress(i, e.loaded ?? 0),
       });
-      if (!headers.etag) throw new Error(`No ETag for part ${i + 1}`);
-      parts.push({ PartNumber: i + 1, ETag: headers.etag });
+      parts.push({ PartNumber: i + 1, ETag: headers.etag! });
     }
 
-    setProgress(100);
-
     onProgress('finalizing');
+
+    const nameBuffer = new TextEncoder().encode(file.name);
+    const encryptedNameBuffer = await worker.processChunk(
+      'ENCRYPT',
+      nameBuffer.buffer as ArrayBuffer,
+      rawKey,
+    );
+    const fileName = toBase64(encryptedNameBuffer);
+
     await api.post('/api/upload/complete', {
       id,
       uploadId,
       parts,
-      fileName: file.name,
+      fileName,
       size: file.size,
     });
 
+    setProgress(100);
     onProgress('done');
-    return `${location.origin}/file/${id}#${keyHex}`;
+    return `${location.origin}/file/${id}#${base64Key}`;
   } catch (error) {
     await api.post('/api/upload/abort', { id, uploadId }).catch(console.error);
     throw error;

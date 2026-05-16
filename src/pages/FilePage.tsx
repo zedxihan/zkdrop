@@ -8,7 +8,7 @@ import type { ProgressStep } from '../types';
 
 export default function FilePage() {
   const { id = '' } = useParams();
-  const keyHex = window.location.hash.substring(1);
+  const base64Key = window.location.hash.substring(1);
 
   const [step, setStep] = useState<ProgressStep>('idle');
   const [progress, setProgress] = useState(0);
@@ -26,10 +26,10 @@ export default function FilePage() {
   });
 
   const handleDownload = () => {
-    if (!keyHex) return;
+    if (!base64Key) return;
     mutate({
       fileId: id,
-      keyHex,
+      base64Key,
       onProgress: setStep,
       setProgress,
       onMeta: setFileMeta,
@@ -43,7 +43,7 @@ export default function FilePage() {
       subtitle="Decrypt locally and download securely."
       error={
         error?.message ||
-        (!keyHex && step === 'idle'
+        (!base64Key && step === 'idle'
           ? 'Missing decryption key in URL.'
           : undefined)
       }

@@ -1,21 +1,22 @@
 // parsers
-export function generateEncryptionKey() {
+export const toBase64 = (b: ArrayBuffer): string =>
+  btoa(String.fromCharCode(...new Uint8Array(b)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+
+export const parseBase64 = (s: string): Uint8Array => {
+  let b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4 !== 0) b64 += '=';
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+};
+
+export const generateEncryptionKey = () => {
   const rawKey = crypto.getRandomValues(new Uint8Array(32));
-  const keyHex = Array.from(rawKey)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  return { rawKey, keyHex };
-}
+  return { rawKey, base64Key: toBase64(rawKey.buffer) };
+};
 
-export function parseKeyHex(keyHex: string): Uint8Array {
-  const rawKey = new Uint8Array(32);
-  for (let i = 0; i < 32; i++) {
-    rawKey[i] = parseInt(keyHex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return rawKey;
-}
-
-// worker manager
+// worker
 export class CryptoWorkerManager {
   private worker: Worker;
 
@@ -24,19 +25,17 @@ export class CryptoWorkerManager {
       type: 'module',
     });
   }
-
-  async processChunk(
+  processChunk(
     type: 'ENCRYPT' | 'DECRYPT',
     chunk: ArrayBuffer,
     rawKey: Uint8Array,
   ): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
-      this.worker.onmessage = (e) => {
-        if (e.data.type === 'SUCCESS') resolve(e.data.payload);
-        else reject(new Error(`Worker Error: ${e.data.error}`));
+      this.worker.onmessage = (e: MessageEvent) => {
+        const { type: resType, payload, error } = e.data;
+        if (resType === 'SUCCESS') resolve(payload);
+        else reject(new Error(error));
       };
-
-      // send as obj
       this.worker.postMessage({ type, chunk, rawKey }, [chunk]);
     });
   }
