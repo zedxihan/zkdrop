@@ -303,13 +303,13 @@ const DotGrid: React.FC<DotGridProps> = ({
 
   return (
     <section
-      className={`relative flex h-full w-full items-center justify-center ${className}`}
+      className={`relative flex size-full items-center justify-center ${className}`}
       style={style}
     >
-      <div ref={wrapperRef} className="relative h-full w-full">
+      <div ref={wrapperRef} className="relative size-full">
         <canvas
           ref={canvasRef}
-          className="pointer-events-none absolute inset-0 h-full w-full"
+          className="pointer-events-none absolute inset-0 size-full"
         />
       </div>
     </section>

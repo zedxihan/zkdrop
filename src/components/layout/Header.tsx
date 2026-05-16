@@ -2,15 +2,15 @@ import { Box, Heart, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const actionBtn =
-  'text-muted flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300 ease-out md:hover:scale-110 hover:text-text active:scale-90';
+  'text-muted flex size-9 items-center justify-center rounded-lg transition-all duration-300 ease-out md:hover:scale-110 hover:text-text active:scale-90';
 
 export default function Header() {
   return (
     <header className="mx-auto flex w-full max-w-[940px] items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5 md:px-0">
       {/* Logo */}
       <Link to="/" className="group flex min-w-0 items-center gap-2.5">
-        <div className="bg-accent text-bg flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ease-out group-active:scale-95 sm:h-11 sm:w-11 md:group-hover:scale-110">
-          <Box size={22} strokeWidth={2.2} className="sm:h-6 sm:w-6" />
+        <div className="bg-accent text-bg flex size-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ease-out group-active:scale-95 sm:size-11 md:group-hover:scale-110">
+          <Box size={22} strokeWidth={2.2} className="sm:size-6" />
         </div>
 
         <div className="flex min-w-0 flex-col">

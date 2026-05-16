@@ -75,7 +75,7 @@ export default function DropzoneStatus({
               <input
                 readOnly
                 value={shareableLink}
-                className="min-w-0 flex-1 truncate bg-transparent text-base outline-none sm:text-lg"
+                className="min-w-0 flex-1 truncate bg-transparent text-base outline-hidden sm:text-lg"
                 onClick={(e) => e.currentTarget.select()}
               />
               <button onClick={handleCopy}>
