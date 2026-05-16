@@ -21,7 +21,7 @@ export interface DropzoneProps {
   mode?: 'upload' | 'download';
   step: ProgressStep;
   progress: number;
-  selectedFile?: File | null;
+  selectedFile?: { name: string; size: number } | null;
   shareableLink?: string;
   downloadName?: string;
   onFileSelect?: (file: File) => void;
@@ -40,11 +40,12 @@ export interface StatusViewProps {
   mode: 'upload' | 'download';
   step: ProgressStep;
   progress: number;
-  file: File;
+  file: { name: string; size: number };
   shareableLink?: string;
   onReset?: () => void;
   onDownload?: () => void;
 }
+
 
 export interface ActionButtonProps {
   icon: ReactNode;
