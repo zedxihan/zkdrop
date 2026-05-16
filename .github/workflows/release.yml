@@ -1,0 +1,103 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers ONLY when you push a tag like v0.2.0
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  release:
+    name: Create Release Notes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch git history
+
+      - name: Generate Custom Changelog
+        id: generate-changelog
+        run: |
+          shopt -s nocasematch
+
+          echo "Getting the previous tag..."
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          FEATURES=""
+          BUG_FIXES=""
+          REFACTOR_STYLE=""
+          PERFORMANCE=""
+          CHORES=""
+          REPO_URL="https://github.com/${{ github.repository }}"
+
+          while IFS= read -r LINE; do
+            [ -z "$LINE" ] && continue
+
+            HASH=$(echo "$LINE" | awk '{print $1}')
+            MESSAGE=$(echo "$LINE" | cut -d' ' -f2-)
+            
+            # Format markdown layout: [hash](url): message
+            LINK="[$HASH]($REPO_URL/commit/$HASH)"
+            FORMATTED_COMMIT="* $LINK: $MESSAGE"
+            
+            # 1. Features
+            if [[ $MESSAGE == feat* || $MESSAGE == feature* || $MESSAGE == enhancement* ]]; then
+              FEATURES+="$FORMATTED_COMMIT\n"
+              
+            # 2. Fixes & Improvements
+            elif [[ $MESSAGE == fix* || $MESSAGE == bug* || $MESSAGE == improvement* || $MESSAGE == patch* ]]; then
+              BUG_FIXES+="$FORMATTED_COMMIT\n"
+              
+            # 3. Refactors & Style
+            elif [[ $MESSAGE == refactor* || $MESSAGE == style* ]]; then
+              REFACTOR_STYLE+="$FORMATTED_COMMIT\n"
+              
+            # 4. Performance
+            elif [[ $MESSAGE == perf* ]]; then
+              PERFORMANCE+="$FORMATTED_COMMIT\n"
+              
+            # 5. Chores & Docs
+            elif [[ $MESSAGE == chore* || $MESSAGE == docs* || $MESSAGE == build* || $MESSAGE == ci* ]]; then
+              CHORES+="$FORMATTED_COMMIT\n"
+            fi
+          done <<< "$(git log $PREV_TAG..HEAD --pretty=format:'%h %s')"
+
+          # Build the markdown file dynamically
+          echo "" > CHANGELOG.md
+
+          if [ -n "$FEATURES" ]; then
+            echo "### 🎉 New Features" >> CHANGELOG.md
+            echo -e "$FEATURES" >> CHANGELOG.md
+          fi
+
+          if [ -n "$BUG_FIXES" ]; then
+            echo "### 🛠️ Bug Fixes & Improvements" >> CHANGELOG.md
+            echo -e "$BUG_FIXES" >> CHANGELOG.md
+          fi
+
+          if [ -n "$REFACTOR_STYLE" ]; then
+            echo "### 🎨 Refactors & Style Changes" >> CHANGELOG.md
+            echo -e "$REFACTOR_STYLE" >> CHANGELOG.md
+          fi
+
+          if [ -n "$PERFORMANCE" ]; then
+            echo "### 🚀 Performance Improvements" >> CHANGELOG.md
+            echo -e "$PERFORMANCE" >> CHANGELOG.md
+          fi
+
+          if [ -n "$CHORES" ]; then
+            echo "### 🧹 Chores & Documentation" >> CHANGELOG.md
+            echo -e "$CHORES" >> CHANGELOG.md
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.md
