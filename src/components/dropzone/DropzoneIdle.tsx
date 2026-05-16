@@ -1,7 +1,7 @@
-import { FolderOpen, Download } from 'lucide-react';
-import ActionButton from '../ui/ActionButton';
+import { Download, FolderOpen } from 'lucide-react';
 import type { IdleViewProps } from '../../types';
-import UploadIcon from './UploadIcon';
+import ActionButton from '../ui/ActionButton';
+import UploadIcon from '../ui/UploadIcon';
 
 export default function DropzoneIdle({
   mode,

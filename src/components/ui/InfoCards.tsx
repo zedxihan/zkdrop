@@ -1,5 +1,5 @@
-import { Card } from 'sketchbook-ui';
 import { Clock3, LockKeyhole, UserRoundX } from 'lucide-react';
+import { Card } from 'sketchbook-ui';
 
 const cardColors = {
   bg: 'var(--color-card)',
@@ -29,8 +29,8 @@ export default function InfoCards() {
           colors={cardColors}
         >
           <div className="-mt-2 flex h-full items-center gap-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/5 sm:h-12 sm:w-12">
-              <LockKeyhole size={22} className="text-accent sm:h-6 sm:w-6" />
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white/5 sm:size-12">
+              <LockKeyhole size={22} className="text-accent sm:size-6" />
             </div>
             <div className="flex flex-col justify-center gap-1 text-left">
               <h2 className="text-xl leading-none font-medium italic sm:text-2xl">
@@ -51,9 +51,9 @@ export default function InfoCards() {
           variant="paper"
           colors={cardColors}
         >
-          <div className="flex h-full w-full flex-row items-center justify-center gap-2 sm:gap-4">
+          <div className="flex size-full items-center justify-center gap-8 sm:gap-4">
             {/* Left Column */}
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center">
               <span className="text-3xl leading-none font-bold text-[#f3ba61] italic sm:text-4xl">
                 100MB
               </span>

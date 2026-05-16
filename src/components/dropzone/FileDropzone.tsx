@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import type { DropzoneProps } from '../../types';
+import DotGrid from '../ui/DotGrid';
 import DropzoneIdle from './DropzoneIdle';
 import DropzoneStatus from './DropzoneStatus';
-import DotGrid from './DotGrid';
 
 export default function FileDropzone(props: DropzoneProps) {
   const { mode = 'upload', step, onFileSelect } = props;
@@ -25,11 +25,11 @@ export default function FileDropzone(props: DropzoneProps) {
         className="pointer-events-none absolute inset-0 z-0"
       >
         <DotGrid
-          dotSize={5}
-          gap={15}
+          dotSize={4}
+          gap={13}
           baseColor="#241f31"
           activeColor="#9eb6aa"
-          proximity={120}
+          proximity={85}
           shockRadius={250}
           shockStrength={5}
           resistance={750}
@@ -43,8 +43,10 @@ export default function FileDropzone(props: DropzoneProps) {
             {...props}
             mode={mode}
             file={
-              props.selectedFile ||
-              ({ name: props.downloadName || 'file', size: 0 } as File)
+              props.selectedFile || {
+                name: props.downloadName || 'file',
+                size: 0,
+              }
             }
           />
         ) : (
