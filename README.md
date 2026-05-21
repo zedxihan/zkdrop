@@ -49,54 +49,51 @@
 - **Serverless Stack:** High-performance architecture on **Cloudflare (Workers, D1, R2)**.
 - **100MB Limit:** Optimized for quick, high-capacity secure transfers.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Development & Contribution)
 
-### 1. Setup & Installation
+### 1. Setup & Configuration
 
-```bash
-git clone https://github.com/zedxihan/zkdrop.git && cd zkdrop
-bun install
-
-# Optional: Create a branch for your feature
-git switch -c feat/my-awesome-feature
-```
-
-### 2. Configuration & Deploy
-
-Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then:
-
-1. Update `backend/wrangler.toml` with your own IDs:
+1. Clone and install project dependencies:
+   ```bash
+   git clone https://github.com/zedxihan/zkdrop.git
+   cd zkdrop
+   bun install && bun install --cwd backend
+   ```
+2. Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then update `backend/wrangler.toml` with your own D1 database and R2 bucket information:
    ```toml
    bucket_name = "your-bucket"
    database_id = "your-d1-id"
    ```
-2. Initialize Database & Deploy:
-
+3. Initialize the D1 database schema for local development:
    ```bash
-   # Run migrations
-   cd backend
-   bunx wrangler d1 execute your-db-name --remote --file=schema.sql
-
-   # Build the frontend and deploy the unified worker
-   cd ..
-   bun run deploy
+   bun --cwd backend wrangler d1 execute zkdrop-db --local --file=schema.sql
    ```
-
-### 3. Local Development
-
-1. Set your backend dev API URL in `.env.local` at the root:
+4. Create a `.env.local` file in the root directory to define your local API endpoint:
    ```env
    VITE_API_URL=http://localhost:8787
    ```
-2. Start the backend Hono worker:
+
+### 2. Local Development
+
+To run the application locally, start both the backend worker and the frontend development server:
+
+1. Start the Hono backend worker (Terminal 1):
    ```bash
    cd backend
    bun run dev
    ```
-3. Start the frontend Vite dev server in a separate terminal at the root:
+2. Start the Vite frontend server (Terminal 2):
    ```bash
    bun run dev
    ```
+
+### 3. Deployment
+
+To manually build the frontend and deploy the unified worker from your local machine:
+
+```bash
+bun run deploy
+```
 
 > [!IMPORTANT]
 > Never use the default `database_id` in the repo; it belongs to the production instance and you will not have access to it.
