@@ -33,7 +33,7 @@
 
 ## Preview
 
-**Live:** https://zkdrop.pages.dev
+**Live:** https://zkdrop.org
 
 <img width="1560" height="936" alt="preview" src="https://github.com/user-attachments/assets/03a3294d-6f22-4210-8d22-4d37c5c65387" />
 
@@ -61,7 +61,7 @@ bun install
 git switch -c feat/my-awesome-feature
 ```
 
-### 2. Backend Configuration
+### 2. Configuration & Deploy
 
 Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then:
 
@@ -70,20 +70,30 @@ Create a **D1 Database** and **R2 Bucket** in your Cloudflare Dashboard, then:
    bucket_name = "your-bucket"
    database_id = "your-d1-id"
    ```
-2. Deploy & Migrate:
+2. Initialize Database & Deploy:
+
+   ```bash
+   # Run migrations
+   cd backend
+   bunx wrangler d1 execute your-db-name --remote --file=schema.sql
+
+   # Build the frontend and deploy the unified worker
+   cd ..
+   bun run deploy
+   ```
+
+### 3. Local Development
+
+1. Set your backend dev API URL in `.env.local` at the root:
+   ```env
+   VITE_API_URL=http://localhost:8787
+   ```
+2. Start the backend Hono worker:
    ```bash
    cd backend
-   npx wrangler d1 execute your-db-name --remote --file=schema.sql
-   npx wrangler deploy
+   bun run dev
    ```
-
-### 3. Frontend Configuration
-
-1. Set your backend URL in a `.env` file (and in Cloudflare Pages settings for production):
-   ```env
-   VITE_API_URL=https://your-worker.workers.dev
-   ```
-2. Start the development server:
+3. Start the frontend Vite dev server in a separate terminal at the root:
    ```bash
    bun run dev
    ```

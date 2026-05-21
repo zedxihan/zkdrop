@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "bun run build && bun run --cwd backend deploy"
   },
   "dependencies": {
     "@fontsource/caveat": "^5.2.8",

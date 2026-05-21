@@ -21,7 +21,7 @@ interface FileRecord {
 
 app.use('/api/*', async (c, next) => {
   const corsMiddleware = cors({
-    origin: c.env.FRONTEND_URL,
+    origin: c.env.FRONTEND_URL || '*',
     allowMethods: ['POST', 'GET', 'OPTIONS'],
   });
   return corsMiddleware(c, next);

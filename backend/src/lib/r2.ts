@@ -1,5 +1,6 @@
 import type {
   D1Database,
+  Fetcher,
   R2Bucket,
   RateLimit,
 } from '@cloudflare/workers-types';
@@ -14,6 +15,7 @@ export interface R2Env {
   R2_SECRET_ACCESS_KEY: string;
   RATE_LIMITER: RateLimit;
   FRONTEND_URL?: string;
+  ASSETS?: Fetcher;
 }
 
 const CHUNK_SIZE = 10 * 1024 * 1024;
