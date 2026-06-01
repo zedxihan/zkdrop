@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import type { DropzoneProps } from '../../types';
-import DotGrid from '../ui/DotGrid';
 import DropzoneIdle from './DropzoneIdle';
 import DropzoneStatus from './DropzoneStatus';
+
+const DotGrid = lazy(() => import('../ui/DotGrid'));
 
 export default function FileDropzone(props: DropzoneProps) {
   const { mode = 'upload', step, onFileSelect } = props;
@@ -24,17 +25,19 @@ export default function FileDropzone(props: DropzoneProps) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0"
       >
-        <DotGrid
-          dotSize={4}
-          gap={13}
-          baseColor="#241f31"
-          activeColor="#9eb6aa"
-          proximity={85}
-          shockRadius={250}
-          shockStrength={5}
-          resistance={750}
-          returnDuration={1.5}
-        />
+        <Suspense fallback={null}>
+          <DotGrid
+            dotSize={4}
+            gap={13}
+            baseColor="#241f31"
+            activeColor="#9eb6aa"
+            proximity={85}
+            shockRadius={250}
+            shockStrength={5}
+            resistance={750}
+            returnDuration={1.5}
+          />
+        </Suspense>
       </div>
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 sm:px-6">

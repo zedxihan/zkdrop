@@ -1,8 +1,10 @@
-import { Routes, Route } from 'react-router-dom';
-import Header from './components/layout/Header';
+import { lazy, Suspense } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import Footer from './components/layout/Footer';
+import Header from './components/layout/Header';
 import HomePage from './pages/HomePage';
-import FilePage from './pages/FilePage';
+
+const FilePage = lazy(() => import('./pages/FilePage'));
 
 export default function App() {
   return (
@@ -13,7 +15,14 @@ export default function App() {
         <div className="mx-auto w-full max-w-[940px] px-4 pb-6 sm:px-6 md:px-0">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/file/:id" element={<FilePage />} />
+            <Route
+              path="/file/:id"
+              element={
+                <Suspense fallback={null}>
+                  <FilePage />
+                </Suspense>
+              }
+            />
           </Routes>
         </div>
       </main>
