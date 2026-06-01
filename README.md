@@ -45,13 +45,18 @@
 - **Frictionless:** No accounts, no logins, no tracking—just drop and share.
 - **Self-Destructing:** Automatic 24-hour purging of all files and metadata.
 - **Granular Progress:** Byte-level real-time feedback powered by **Axios**.
-- **Modern UI:** Interactive aesthetic featuring `sketchbook-ui` and GSAP.
+- **Modern UI:** Interactive aesthetic featuring **Preact**, `sketchbook-ui`, and GSAP.
 - **Serverless Stack:** High-performance architecture on **Cloudflare (Workers, D1, R2)**.
 - **100MB Limit:** Optimized for quick, high-capacity secure transfers.
 
 ## 🚀 Quick Start (Development & Contribution)
 
 ### 1. Setup & Configuration
+
+This project includes a **Nix Flake** to automate the development environment setup.
+
+- **Using Nix & direnv (Recommended):** If you have Nix and `direnv` installed, run `direnv allow` inside the cloned directory to automatically load the correct `bun` and `node` versions.
+- **Manual Setup:** Ensure you have **Bun** and **Node.js (v22)** installed globally on your machine.
 
 1. Clone and install project dependencies:
    ```bash

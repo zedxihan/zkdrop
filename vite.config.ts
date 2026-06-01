@@ -1,9 +1,9 @@
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
+import { preact } from '@preact/preset-vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [preact(), tailwindcss()],
   build: {
     rollupOptions: {
       output: {

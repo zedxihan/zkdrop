@@ -18,6 +18,7 @@ dist
 dist-ssr
 *.local
 .wrangler/
+.direnv
 
 # Editor directories
 .vscode
