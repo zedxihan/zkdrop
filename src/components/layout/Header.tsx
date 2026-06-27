@@ -1,12 +1,12 @@
 import { Box, Heart, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const actionBtn =
   'text-muted flex size-9 items-center justify-center rounded-lg transition-all duration-300 ease-out md:hover:scale-110 hover:text-text active:scale-90';
 
 export default function Header() {
   return (
-    <header className="mx-auto flex w-full max-w-[940px] items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5 md:px-0">
+    <header className="mx-auto flex w-full max-w-235 items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-5 md:px-0">
       {/* Logo */}
       <Link to="/" className="group flex min-w-0 items-center gap-2.5">
         <div className="bg-accent text-bg flex size-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ease-out group-active:scale-95 sm:size-11 md:group-hover:scale-110">

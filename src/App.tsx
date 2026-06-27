@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import Footer from './components/layout/Footer';
 import Header from './components/layout/Header';
 import HomePage from './pages/HomePage';
@@ -12,7 +12,7 @@ export default function App() {
       <Header />
 
       <main className="flex w-full flex-1 flex-col justify-start sm:justify-center">
-        <div className="mx-auto w-full max-w-[940px] px-4 pb-6 sm:px-6 md:px-0">
+        <div className="mx-auto w-full max-w-235 px-4 pb-6 sm:px-6 md:px-0">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route

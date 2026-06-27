@@ -6,12 +6,16 @@ export default defineConfig({
   plugins: [preact(), tailwindcss()],
   build: {
     rollupOptions: {
+      onLog(level, log, handler) {
+        if (log.code !== 'IMPORT_IS_UNDEFINED') handler(level, log);
+      },
       output: {
         manualChunks(id) {
+          if (!id.includes('node_modules')) return;
           if (
-            id.includes('react-router-dom') ||
+            id.includes('react-router') ||
             id.includes('react-dom') ||
-            id.includes('node_modules/react/')
+            id.includes('preact')
           ) {
             return 'react';
           }
@@ -21,11 +25,8 @@ export default defineConfig({
           ) {
             return 'vendor-utils';
           }
-          if (id.includes('sketchbook-ui')) {
-            return 'sketchbook-ui';
-          }
-          if (id.includes('gsap')) {
-            return 'gsap';
+          for (const key of ['sketchbook-ui', 'gsap']) {
+            if (id.includes(key)) return key;
           }
         },
       },

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import Container from '../components/layout/Container';
 import FileDropzone from '../components/dropzone/FileDropzone';
